@@ -1,0 +1,6 @@
+{
+  "name": "LedgerFlow - Expense Tracker & Budget Dashboard",
+  "description": "Interactive full-stack expense tracker and budget dashboard featuring monthly summaries, category analytics with interactive bar and pie charts, and filtered transaction history.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
