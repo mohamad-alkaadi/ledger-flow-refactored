@@ -15,7 +15,6 @@ import { Header } from "./components/common/Header";
 import { CategoryAnalyticsCards } from "./components/CategoryAnalyticsCards";
 import { AddTransactionModal } from "./components/AddTransactionModal";
 import { BudgetSettingsModal } from "./components/BudgetSettingsModal";
-import { Filter, X } from "lucide-react";
 import Footer from "./components/common/Footer";
 import Overview from "./components/overview/Overview";
 import Transactions from "./components/transactions/Transactions";
