@@ -1,9 +1,5 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
-import {
-  Transaction,
-  MonthlyBudgetConfig,
-  ExpenseCategory,
-} from "./types/expense";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { Transaction, MonthlyBudgetConfig } from "./types/expense";
 import {
   getStoredTransactions,
   saveStoredTransactions,
@@ -15,20 +11,11 @@ import {
   calculateDailySpending,
   calculateMultiMonthCategoryTrends,
 } from "./services/expenseService";
-import { INITIAL_TRANSACTIONS, DEFAULT_BUDGET_CONFIGS } from "./data/mockData";
 import { Header } from "./components/common/Header";
-import { BudgetSummaryCards } from "./components/BudgetSummaryCards";
 import { CategoryAnalyticsCards } from "./components/CategoryAnalyticsCards";
-import { TransactionsSummaryCards } from "./components/TransactionsSummaryCards";
-import { CategoryPieChart } from "./components/charts/CategoryPieChart";
-import { CategoryBarChart } from "./components/charts/CategoryBarChart";
-import { CategoryHealthMatrix } from "./components/charts/CategoryHealthMatrix";
-import { CategoryTrendComparison } from "./components/charts/CategoryTrendComparison";
-import { TransactionTable } from "./components/TransactionTable";
 import { AddTransactionModal } from "./components/AddTransactionModal";
 import { BudgetSettingsModal } from "./components/BudgetSettingsModal";
-import { CategoryAnalyticsBreakdown } from "./components/CategoryAnalyticsBreakdown";
-import { Filter, CheckCircle, X } from "lucide-react";
+import { Filter, X } from "lucide-react";
 import Footer from "./components/common/Footer";
 import Overview from "./components/overview/Overview";
 import Transactions from "./components/transactions/Transactions";
@@ -184,22 +171,6 @@ export default function App() {
     [transactions],
   );
 
-  const handleDeleteTransaction = useCallback(
-    async (id: string) => {
-      const updated = transactions.filter((t) => t.id !== id);
-      setTransactions(updated);
-      saveStoredTransactions(updated);
-      showToast("Transaction removed from ledger.");
-
-      try {
-        await fetch(`/api/transactions/${id}`, { method: "DELETE" });
-      } catch {
-        // Fallback
-      }
-    },
-    [transactions],
-  );
-
   const handleEditTransaction = (tx: Transaction) => {
     setEditingTransaction(tx);
     setIsAddModalOpen(true);
@@ -228,63 +199,10 @@ export default function App() {
     [budgetConfigs, selectedMonth],
   );
 
-  const handleResetData = useCallback(async () => {
-    setTransactions(INITIAL_TRANSACTIONS);
-    saveStoredTransactions(INITIAL_TRANSACTIONS);
-    setBudgetConfigs(DEFAULT_BUDGET_CONFIGS);
-    saveStoredBudgets(DEFAULT_BUDGET_CONFIGS);
-    setSelectedCategory(null);
-    showToast("Mock data reset to original defaults.");
-
-    try {
-      await fetch("/api/reset", { method: "POST" });
-    } catch {
-      // Fallback
-    }
-  }, []);
-
-  const handleExportCSV = useCallback(() => {
-    const rows = [
-      [
-        "ID",
-        "Date",
-        "Type",
-        "Category",
-        "Merchant",
-        "Description",
-        "Amount",
-        "Payment Method",
-        "Notes",
-      ],
-      ...monthTransactions.map((tx) => [
-        tx.id,
-        tx.date,
-        tx.type,
-        `"${tx.category}"`,
-        `"${tx.merchant.replace(/"/g, '""')}"`,
-        `"${tx.description.replace(/"/g, '""')}"`,
-        tx.amount.toFixed(2),
-        tx.paymentMethod,
-        `"${(tx.notes || "").replace(/"/g, '""')}"`,
-      ]),
-    ];
-
-    const csvContent =
-      "data:text/csv;charset=utf-8," + rows.map((e) => e.join(",")).join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `LedgerFlow_Expenses_${selectedMonth}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    showToast(`Exported ${monthTransactions.length} transactions to CSV.`);
-  }, [monthTransactions, selectedMonth]);
-
   const monthLabel =
     MONTHS_LIST.find((m) => m.value === selectedMonth)?.label.split(" (")[0] ||
     selectedMonth;
-
+  // ---------------------------------------------------------------------------------
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
       {/* Top Header */}
@@ -294,8 +212,6 @@ export default function App() {
           setIsAddModalOpen(true);
         }}
         onOpenBudgetModal={() => setIsBudgetModalOpen(true)}
-        onResetData={handleResetData}
-        onExportCSV={handleExportCSV}
         activeTab={activeTab}
         setActiveTab={(tab: string) =>
           setActiveTab(tab as "overview" | "analytics" | "transactions")
@@ -353,7 +269,9 @@ export default function App() {
             setSelectedCategory={setSelectedCategory}
             setEditingTransaction={setEditingTransaction}
             setIsAddModalOpen={setIsAddModalOpen}
-            handleDeleteTransaction={handleDeleteTransaction}
+            setTransactions={setTransactions}
+            saveStoredTransactions={saveStoredTransactions}
+            showToast={showToast}
           />
         )}
 
@@ -375,18 +293,27 @@ export default function App() {
             monthTransactions={monthTransactions}
             setEditingTransaction={setEditingTransaction}
             setIsAddModalOpen={setIsAddModalOpen}
-            handleExportCSV={handleExportCSV}
             selectedCategory={selectedCategory}
             setSelectedCategory={setSelectedCategory}
             handleEditTransaction={handleEditTransaction}
-            handleDeleteTransaction={handleDeleteTransaction}
+            selectedMonth={selectedMonth}
+            setTransactions={setTransactions}
+            saveStoredTransactions={saveStoredTransactions}
+            showToast={showToast}
           />
         )}
       </main>
 
       {/* Footer */}
 
-      <Footer handleResetData={handleResetData} />
+      <Footer
+        setTransactions={setTransactions}
+        saveStoredTransactions={saveStoredTransactions}
+        setBudgetConfigs={setBudgetConfigs}
+        saveStoredBudgets={saveStoredBudgets}
+        setSelectedCategory={setSelectedCategory}
+        showToast={showToast}
+      />
 
       {/* Add / Edit Transaction Modal */}
       <AddTransactionModal
@@ -395,9 +322,14 @@ export default function App() {
           setIsAddModalOpen(false);
           setEditingTransaction(null);
         }}
-        onSave={handleSaveTransaction}
+        // onSave={handleSaveTransaction}
         editingTransaction={editingTransaction}
         defaultMonth={selectedMonth}
+        transactions={transactions}
+        setTransactions={setTransactions}
+        saveStoredTransactions={saveStoredTransactions}
+        setEditingTransaction={setEditingTransaction}
+        showToast={showToast}
       />
 
       {/* Budget Configuration Modal */}

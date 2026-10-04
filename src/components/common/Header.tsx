@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Wallet,
   Plus,
@@ -6,13 +6,11 @@ import {
   RotateCcw,
   Download,
   Calendar,
-} from 'lucide-react';
+} from "lucide-react";
 
 interface HeaderProps {
   onOpenAddModal: () => void;
   onOpenBudgetModal: () => void;
-  onResetData: () => void;
-  onExportCSV: () => void;
   activeTab: string;
   setActiveTab: (tab: string) => void;
   selectedMonth: string;
@@ -23,8 +21,6 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   onOpenAddModal,
   onOpenBudgetModal,
-  onResetData,
-  onExportCSV,
   activeTab,
   setActiveTab,
   selectedMonth,
@@ -53,31 +49,31 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Zone 2: Navigation tabs */}
           <nav className="hidden md:flex items-center gap-1 p-1 bg-slate-100 rounded-lg">
             <button
-              onClick={() => setActiveTab('overview')}
+              onClick={() => setActiveTab("overview")}
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
-                activeTab === 'overview'
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                activeTab === "overview"
+                  ? "bg-white text-slate-900 shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               Overview
             </button>
             <button
-              onClick={() => setActiveTab('analytics')}
+              onClick={() => setActiveTab("analytics")}
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
-                activeTab === 'analytics'
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                activeTab === "analytics"
+                  ? "bg-white text-slate-900 shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               Category Analytics
             </button>
             <button
-              onClick={() => setActiveTab('transactions')}
+              onClick={() => setActiveTab("transactions")}
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
-                activeTab === 'transactions'
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                activeTab === "transactions"
+                  ? "bg-white text-slate-900 shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               Transactions
@@ -103,16 +99,6 @@ export const Header: React.FC<HeaderProps> = ({
               </select>
             </div>
 
-            {/* Quick Export CSV */}
-            <button
-              onClick={onExportCSV}
-              title="Export Transactions to CSV"
-              className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-              aria-label="Export CSV"
-            >
-              <Download className="w-4 h-4" />
-            </button>
-
             {/* Budget Configuration button */}
             <button
               onClick={onOpenBudgetModal}
@@ -121,16 +107,6 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <SlidersHorizontal className="w-3.5 h-3.5 text-slate-500" />
               <span>Budget Plan</span>
-            </button>
-
-            {/* Reset data */}
-            <button
-              onClick={onResetData}
-              title="Reset Mock Data"
-              className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
-              aria-label="Reset mock data"
-            >
-              <RotateCcw className="w-4 h-4" />
             </button>
 
             {/* New Transaction Button */}
@@ -147,31 +123,31 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Mobile secondary tab bar */}
         <div className="flex md:hidden items-center justify-between pb-2.5 pt-1 border-t border-slate-100 gap-1 overflow-x-auto">
           <button
-            onClick={() => setActiveTab('overview')}
+            onClick={() => setActiveTab("overview")}
             className={`flex-1 py-1.5 px-2 text-xs font-medium rounded-md text-center transition-colors whitespace-nowrap ${
-              activeTab === 'overview'
-                ? 'bg-slate-900 text-white shadow-xs'
-                : 'text-slate-600 hover:bg-slate-100'
+              activeTab === "overview"
+                ? "bg-slate-900 text-white shadow-xs"
+                : "text-slate-600 hover:bg-slate-100"
             }`}
           >
             Overview
           </button>
           <button
-            onClick={() => setActiveTab('analytics')}
+            onClick={() => setActiveTab("analytics")}
             className={`flex-1 py-1.5 px-2 text-xs font-medium rounded-md text-center transition-colors whitespace-nowrap ${
-              activeTab === 'analytics'
-                ? 'bg-slate-900 text-white shadow-xs'
-                : 'text-slate-600 hover:bg-slate-100'
+              activeTab === "analytics"
+                ? "bg-slate-900 text-white shadow-xs"
+                : "text-slate-600 hover:bg-slate-100"
             }`}
           >
             Category Analytics
           </button>
           <button
-            onClick={() => setActiveTab('transactions')}
+            onClick={() => setActiveTab("transactions")}
             className={`flex-1 py-1.5 px-2 text-xs font-medium rounded-md text-center transition-colors whitespace-nowrap ${
-              activeTab === 'transactions'
-                ? 'bg-slate-900 text-white shadow-xs'
-                : 'text-slate-600 hover:bg-slate-100'
+              activeTab === "transactions"
+                ? "bg-slate-900 text-white shadow-xs"
+                : "text-slate-600 hover:bg-slate-100"
             }`}
           >
             Transactions

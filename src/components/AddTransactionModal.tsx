@@ -1,54 +1,119 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from "react";
 import {
   ExpenseCategory,
   PaymentMethod,
   Transaction,
   TransactionType,
-} from '../types/expense';
-import { CATEGORY_COLORS, DEFAULT_CATEGORY_BUDGETS } from '../data/mockData';
-import { X, DollarSign, Calendar, Tag, CreditCard, FileText, Check } from 'lucide-react';
+} from "../types/expense";
+import { CATEGORY_COLORS, DEFAULT_CATEGORY_BUDGETS } from "../data/mockData";
+import {
+  X,
+  DollarSign,
+  Calendar,
+  Tag,
+  CreditCard,
+  FileText,
+  Check,
+} from "lucide-react";
 
 interface AddTransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (transactionData: Omit<Transaction, 'id'>, editId?: string) => void;
+  // onSave: (transactionData: Omit<Transaction, "id">, editId?: string) => void;
   editingTransaction?: Transaction | null;
   defaultMonth?: string;
+  transactions: any;
+  setTransactions: any;
+  saveStoredTransactions: any;
+  setEditingTransaction: any;
+  showToast: any;
 }
 
 const EXPENSE_CATEGORIES: ExpenseCategory[] = [
-  'Housing & Rent',
-  'Food & Groceries',
-  'Dining & Coffee',
-  'Transportation',
-  'Utilities & Bills',
-  'Entertainment & Subscriptions',
-  'Healthcare & Wellness',
-  'Shopping & Retail',
-  'Travel & Leisure',
-  'Education & Tech',
-  'Other',
+  "Housing & Rent",
+  "Food & Groceries",
+  "Dining & Coffee",
+  "Transportation",
+  "Utilities & Bills",
+  "Entertainment & Subscriptions",
+  "Healthcare & Wellness",
+  "Shopping & Retail",
+  "Travel & Leisure",
+  "Education & Tech",
+  "Other",
 ];
 
-const INCOME_CATEGORIES: ExpenseCategory[] = ['Income & Salary', 'Other'];
+const INCOME_CATEGORIES: ExpenseCategory[] = ["Income & Salary", "Other"];
 
 export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   isOpen,
   onClose,
-  onSave,
+  // onSave,
   editingTransaction,
-  defaultMonth = '2026-09',
+  defaultMonth = "2026-09",
+  transactions,
+  setTransactions,
+  saveStoredTransactions,
+  setEditingTransaction,
+  showToast,
 }) => {
-  const [type, setType] = useState<TransactionType>('expense');
-  const [amount, setAmount] = useState('');
-  const [merchant, setMerchant] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState<ExpenseCategory>('Food & Groceries');
+  const [type, setType] = useState<TransactionType>("expense");
+  const [amount, setAmount] = useState("");
+  const [merchant, setMerchant] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState<ExpenseCategory>("Food & Groceries");
   const [date, setDate] = useState(`${defaultMonth}-27`);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('credit_card');
-  const [notes, setNotes] = useState('');
+  const [paymentMethod, setPaymentMethod] =
+    useState<PaymentMethod>("credit_card");
+  const [notes, setNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const onSave = useCallback(
+    async (txData: Omit<Transaction, "id">, editId?: string) => {
+      let updatedTransactions: Transaction[];
+
+      if (editId) {
+        updatedTransactions = transactions.map((t: any) =>
+          t.id === editId ? { ...t, ...txData, id: editId } : t,
+        );
+        showToast("Transaction successfully updated.");
+
+        // Attempt API sync
+        try {
+          await fetch(`/api/transactions/${editId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(txData),
+          });
+        } catch {
+          // Local fallback handled
+        }
+      } else {
+        const newTx: Transaction = {
+          ...txData,
+          id: `tx-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        };
+        updatedTransactions = [newTx, ...transactions];
+        showToast("New transaction recorded to ledger.");
+
+        // Attempt API sync
+        try {
+          await fetch("/api/transactions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(newTx),
+          });
+        } catch {
+          // Local fallback handled
+        }
+      }
+
+      setTransactions(updatedTransactions);
+      saveStoredTransactions(updatedTransactions);
+      setEditingTransaction(null);
+    },
+    [transactions],
+  );
   useEffect(() => {
     if (editingTransaction) {
       setType(editingTransaction.type);
@@ -58,16 +123,16 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
       setCategory(editingTransaction.category);
       setDate(editingTransaction.date);
       setPaymentMethod(editingTransaction.paymentMethod);
-      setNotes(editingTransaction.notes || '');
+      setNotes(editingTransaction.notes || "");
     } else {
-      setType('expense');
-      setAmount('');
-      setMerchant('');
-      setDescription('');
-      setCategory('Food & Groceries');
+      setType("expense");
+      setAmount("");
+      setMerchant("");
+      setDescription("");
+      setCategory("Food & Groceries");
       setDate(`${defaultMonth}-27`);
-      setPaymentMethod('credit_card');
-      setNotes('');
+      setPaymentMethod("credit_card");
+      setNotes("");
     }
     setErrors({});
   }, [editingTransaction, defaultMonth, isOpen]);
@@ -78,16 +143,16 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
     const errs: Record<string, string> = {};
     const parsedAmount = parseFloat(amount);
     if (!amount || isNaN(parsedAmount) || parsedAmount <= 0) {
-      errs.amount = 'Please enter a valid amount greater than 0';
+      errs.amount = "Please enter a valid amount greater than 0";
     }
     if (!merchant.trim()) {
-      errs.merchant = 'Merchant / Payee is required';
+      errs.merchant = "Merchant / Payee is required";
     }
     if (!description.trim()) {
-      errs.description = 'Description is required';
+      errs.description = "Description is required";
     }
     if (!date) {
-      errs.date = 'Date is required';
+      errs.date = "Date is required";
     }
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -107,15 +172,15 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
         date,
         paymentMethod,
         notes: notes.trim(),
-        status: 'completed',
+        status: "completed",
       },
-      editingTransaction ? editingTransaction.id : undefined
+      editingTransaction ? editingTransaction.id : undefined,
     );
     onClose();
   };
 
   const activeCategories =
-    type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
+    type === "expense" ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
 
   return (
     <div
@@ -129,12 +194,12 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
         <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
           <div>
             <h3 className="text-base font-semibold text-slate-900">
-              {editingTransaction ? 'Edit Transaction' : 'Record Transaction'}
+              {editingTransaction ? "Edit Transaction" : "Record Transaction"}
             </h3>
             <p className="text-xs text-slate-500">
               {editingTransaction
-                ? 'Update transaction parameters in the ledger'
-                : 'Log a new cash outflow or inflow with category tags'}
+                ? "Update transaction parameters in the ledger"
+                : "Log a new cash outflow or inflow with category tags"}
             </p>
           </div>
           <button
@@ -156,13 +221,13 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  setType('expense');
-                  setCategory('Food & Groceries');
+                  setType("expense");
+                  setCategory("Food & Groceries");
                 }}
                 className={`py-1.5 text-xs font-medium rounded-md transition-colors ${
-                  type === 'expense'
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                  type === "expense"
+                    ? "bg-white text-slate-900 shadow-xs"
+                    : "text-slate-600 hover:text-slate-900"
                 }`}
               >
                 Expense Outflow
@@ -170,13 +235,13 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  setType('income');
-                  setCategory('Income & Salary');
+                  setType("income");
+                  setCategory("Income & Salary");
                 }}
                 className={`py-1.5 text-xs font-medium rounded-md transition-colors ${
-                  type === 'income'
-                    ? 'bg-white text-emerald-800 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                  type === "income"
+                    ? "bg-white text-emerald-800 shadow-xs"
+                    : "text-slate-600 hover:text-slate-900"
                 }`}
               >
                 Income Inflow
@@ -201,8 +266,8 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                   placeholder="0.00"
                   className={`w-full pl-9 pr-3 py-2 text-sm font-mono tabular-nums text-slate-900 bg-white border rounded-lg focus:outline-hidden ${
                     errors.amount
-                      ? 'border-rose-400 focus:border-rose-500'
-                      : 'border-slate-200 focus:border-slate-800'
+                      ? "border-rose-400 focus:border-rose-500"
+                      : "border-slate-200 focus:border-slate-800"
                   }`}
                 />
               </div>
@@ -223,8 +288,8 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                   onChange={(e) => setDate(e.target.value)}
                   className={`w-full pl-9 pr-3 py-2 text-sm font-mono text-slate-900 bg-white border rounded-lg focus:outline-hidden ${
                     errors.date
-                      ? 'border-rose-400 focus:border-rose-500'
-                      : 'border-slate-200 focus:border-slate-800'
+                      ? "border-rose-400 focus:border-rose-500"
+                      : "border-slate-200 focus:border-slate-800"
                   }`}
                 />
               </div>
@@ -247,8 +312,8 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                 placeholder="e.g. Whole Foods, Apple, Stripe"
                 className={`w-full px-3 py-2 text-sm text-slate-900 bg-white border rounded-lg focus:outline-hidden ${
                   errors.merchant
-                    ? 'border-rose-400 focus:border-rose-500'
-                    : 'border-slate-200 focus:border-slate-800'
+                    ? "border-rose-400 focus:border-rose-500"
+                    : "border-slate-200 focus:border-slate-800"
                 }`}
               />
               {errors.merchant && (
@@ -267,12 +332,14 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                 placeholder="e.g. Weekly Groceries, Cloud Bill"
                 className={`w-full px-3 py-2 text-sm text-slate-900 bg-white border rounded-lg focus:outline-hidden ${
                   errors.description
-                    ? 'border-rose-400 focus:border-rose-500'
-                    : 'border-slate-200 focus:border-slate-800'
+                    ? "border-rose-400 focus:border-rose-500"
+                    : "border-slate-200 focus:border-slate-800"
                 }`}
               />
               {errors.description && (
-                <p className="mt-1 text-xs text-rose-600">{errors.description}</p>
+                <p className="mt-1 text-xs text-rose-600">
+                  {errors.description}
+                </p>
               )}
             </div>
           </div>
@@ -287,7 +354,9 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                 <Tag className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <select
                   value={category}
-                  onChange={(e) => setCategory(e.target.value as ExpenseCategory)}
+                  onChange={(e) =>
+                    setCategory(e.target.value as ExpenseCategory)
+                  }
                   className="w-full pl-9 pr-3 py-2 text-sm text-slate-900 bg-white border border-slate-200 focus:border-slate-800 rounded-lg focus:outline-hidden"
                 >
                   {activeCategories.map((cat) => (
@@ -307,7 +376,9 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                 <CreditCard className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <select
                   value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
+                  onChange={(e) =>
+                    setPaymentMethod(e.target.value as PaymentMethod)
+                  }
                   className="w-full pl-9 pr-3 py-2 text-sm text-slate-900 bg-white border border-slate-200 focus:border-slate-800 rounded-lg focus:outline-hidden"
                 >
                   <option value="credit_card">Credit Card</option>
@@ -351,7 +422,9 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
               className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-xs transition-colors"
             >
               <Check className="w-3.5 h-3.5" />
-              <span>{editingTransaction ? 'Save Changes' : 'Record Transaction'}</span>
+              <span>
+                {editingTransaction ? "Save Changes" : "Record Transaction"}
+              </span>
             </button>
           </div>
         </form>

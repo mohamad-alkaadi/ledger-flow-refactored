@@ -16,7 +16,9 @@ const Overview = ({
   setSelectedCategory,
   setEditingTransaction,
   setIsAddModalOpen,
-  handleDeleteTransaction,
+  setTransactions,
+  saveStoredTransactions,
+  showToast,
 }: {
   metrics: any;
   topCategory: any;
@@ -29,7 +31,9 @@ const Overview = ({
   setSelectedCategory: any;
   setEditingTransaction: any;
   setIsAddModalOpen: any;
-  handleDeleteTransaction: any;
+  setTransactions: any;
+  saveStoredTransactions: any;
+  showToast: any;
 }) => {
   return (
     <div>
@@ -66,11 +70,13 @@ const Overview = ({
         selectedCategory={selectedCategory}
         onSelectCategory={setSelectedCategory}
         onEditTransaction={handleEditTransaction}
-        onDeleteTransaction={handleDeleteTransaction}
         onOpenAddModal={() => {
           setEditingTransaction(null);
           setIsAddModalOpen(true);
         }}
+        setTransactions={setTransactions}
+        saveStoredTransactions={saveStoredTransactions}
+        showToast={showToast}
       />
     </div>
   );

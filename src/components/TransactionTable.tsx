@@ -1,6 +1,10 @@
-import React, { useState, useMemo } from 'react';
-import { ExpenseCategory, Transaction, TransactionType } from '../types/expense';
-import { CATEGORY_COLORS } from '../data/mockData';
+import React, { useState, useMemo, useCallback } from "react";
+import {
+  ExpenseCategory,
+  Transaction,
+  TransactionType,
+} from "../types/expense";
+import { CATEGORY_COLORS } from "../data/mockData";
 import {
   Search,
   SlidersHorizontal,
@@ -17,36 +21,55 @@ import {
   ChevronLeft,
   ChevronRight,
   Plus,
-} from 'lucide-react';
+} from "lucide-react";
 
 interface TransactionTableProps {
   transactions: Transaction[];
   selectedCategory: string | null;
   onSelectCategory: (cat: string | null) => void;
   onEditTransaction: (tx: Transaction) => void;
-  onDeleteTransaction: (id: string) => void;
   onOpenAddModal: () => void;
+  setTransactions: any;
+  saveStoredTransactions: any;
+  showToast: any;
 }
 
-type SortField = 'date' | 'amount' | 'merchant' | 'category';
-type SortOrder = 'asc' | 'desc';
+type SortField = "date" | "amount" | "merchant" | "category";
+type SortOrder = "asc" | "desc";
 
 export const TransactionTable: React.FC<TransactionTableProps> = ({
   transactions,
   selectedCategory,
   onSelectCategory,
   onEditTransaction,
-  onDeleteTransaction,
   onOpenAddModal,
+  setTransactions,
+  saveStoredTransactions,
+  showToast,
 }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [typeFilter, setTypeFilter] = useState<'all' | TransactionType>('all');
-  const [sortField, setSortField] = useState<SortField>('date');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [typeFilter, setTypeFilter] = useState<"all" | TransactionType>("all");
+  const [sortField, setSortField] = useState<SortField>("date");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  const onDeleteTransaction = useCallback(
+    async (id: string) => {
+      const updated = transactions.filter((t) => t.id !== id);
+      setTransactions(updated);
+      saveStoredTransactions(updated);
+      showToast("Transaction removed from ledger.");
+
+      try {
+        await fetch(`/api/transactions/${id}`, { method: "DELETE" });
+      } catch {
+        // Fallback
+      }
+    },
+    [transactions],
+  );
   // Available unique categories
   const categoriesList = useMemo(() => {
     const set = new Set<string>();
@@ -59,7 +82,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
     return transactions
       .filter((tx) => {
         // Type filter
-        if (typeFilter !== 'all' && tx.type !== typeFilter) return false;
+        if (typeFilter !== "all" && tx.type !== typeFilter) return false;
 
         // Category filter
         if (selectedCategory && tx.category !== selectedCategory) return false;
@@ -69,7 +92,9 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
           const q = searchQuery.toLowerCase();
           const matchMerchant = tx.merchant.toLowerCase().includes(q);
           const matchDesc = tx.description.toLowerCase().includes(q);
-          const matchNotes = tx.notes ? tx.notes.toLowerCase().includes(q) : false;
+          const matchNotes = tx.notes
+            ? tx.notes.toLowerCase().includes(q)
+            : false;
           const matchCat = tx.category.toLowerCase().includes(q);
           if (!matchMerchant && !matchDesc && !matchNotes && !matchCat) {
             return false;
@@ -80,21 +105,31 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
       })
       .sort((a, b) => {
         let comparison = 0;
-        if (sortField === 'date') {
+        if (sortField === "date") {
           comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
-        } else if (sortField === 'amount') {
+        } else if (sortField === "amount") {
           comparison = a.amount - b.amount;
-        } else if (sortField === 'merchant') {
+        } else if (sortField === "merchant") {
           comparison = a.merchant.localeCompare(b.merchant);
-        } else if (sortField === 'category') {
+        } else if (sortField === "category") {
           comparison = a.category.localeCompare(b.category);
         }
-        return sortOrder === 'asc' ? comparison : -comparison;
+        return sortOrder === "asc" ? comparison : -comparison;
       });
-  }, [transactions, typeFilter, selectedCategory, searchQuery, sortField, sortOrder]);
+  }, [
+    transactions,
+    typeFilter,
+    selectedCategory,
+    searchQuery,
+    sortField,
+    sortOrder,
+  ]);
 
   // Pagination calculation
-  const totalPages = Math.max(1, Math.ceil(filteredTransactions.length / pageSize));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredTransactions.length / pageSize),
+  );
   const paginatedTransactions = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
     return filteredTransactions.slice(start, start + pageSize);
@@ -102,31 +137,31 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
       setSortField(field);
-      setSortOrder('desc');
+      setSortOrder("desc");
     }
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
       minimumFractionDigits: 2,
     }).format(amount);
   };
 
   const formatDate = (dateStr: string) => {
     try {
-      const parts = dateStr.split('-');
+      const parts = dateStr.split("-");
       const year = parseInt(parts[0], 10);
       const month = parseInt(parts[1], 10) - 1;
       const day = parseInt(parts[2], 10);
-      return new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
+      return new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
       }).format(new Date(year, month, day));
     } catch {
       return dateStr;
@@ -135,11 +170,11 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
 
   const getPaymentIcon = (method: string) => {
     switch (method) {
-      case 'bank_transfer':
+      case "bank_transfer":
         return <Building2 className="w-3.5 h-3.5 text-slate-400" />;
-      case 'digital_wallet':
+      case "digital_wallet":
         return <Smartphone className="w-3.5 h-3.5 text-slate-400" />;
-      case 'cash':
+      case "cash":
         return <Banknote className="w-3.5 h-3.5 text-slate-400" />;
       default:
         return <CreditCard className="w-3.5 h-3.5 text-slate-400" />;
@@ -148,21 +183,23 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
 
   const formatPaymentLabel = (method: string) => {
     switch (method) {
-      case 'bank_transfer':
-        return 'Direct ACH / Wire';
-      case 'digital_wallet':
-        return 'Apple / Google Pay';
-      case 'cash':
-        return 'Cash';
-      case 'debit_card':
-        return 'Debit Card';
+      case "bank_transfer":
+        return "Direct ACH / Wire";
+      case "digital_wallet":
+        return "Apple / Google Pay";
+      case "cash":
+        return "Cash";
+      case "debit_card":
+        return "Debit Card";
       default:
-        return 'Credit Card';
+        return "Credit Card";
     }
   };
 
   const hasActiveFilters =
-    searchQuery.trim() !== '' || typeFilter !== 'all' || selectedCategory !== null;
+    searchQuery.trim() !== "" ||
+    typeFilter !== "all" ||
+    selectedCategory !== null;
 
   return (
     <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
@@ -193,7 +230,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
             />
             {searchQuery && (
               <button
-                onClick={() => setSearchQuery('')}
+                onClick={() => setSearchQuery("")}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
               >
                 <X className="w-3.5 h-3.5" />
@@ -208,39 +245,39 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
           <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg">
             <button
               onClick={() => {
-                setTypeFilter('all');
+                setTypeFilter("all");
                 setCurrentPage(1);
               }}
               className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                typeFilter === 'all'
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                typeFilter === "all"
+                  ? "bg-white text-slate-900 shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               All Types
             </button>
             <button
               onClick={() => {
-                setTypeFilter('expense');
+                setTypeFilter("expense");
                 setCurrentPage(1);
               }}
               className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                typeFilter === 'expense'
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                typeFilter === "expense"
+                  ? "bg-white text-slate-900 shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               Expenses
             </button>
             <button
               onClick={() => {
-                setTypeFilter('income');
+                setTypeFilter("income");
                 setCurrentPage(1);
               }}
               className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                typeFilter === 'income'
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                typeFilter === "income"
+                  ? "bg-white text-slate-900 shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               Income
@@ -252,9 +289,11 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
             <div className="relative inline-flex items-center">
               <SlidersHorizontal className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 pointer-events-none" />
               <select
-                value={selectedCategory || 'all'}
+                value={selectedCategory || "all"}
                 onChange={(e) => {
-                  onSelectCategory(e.target.value === 'all' ? null : e.target.value);
+                  onSelectCategory(
+                    e.target.value === "all" ? null : e.target.value,
+                  );
                   setCurrentPage(1);
                 }}
                 className="pl-8 pr-7 py-1 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-lg focus:outline-hidden focus:border-slate-400 cursor-pointer"
@@ -272,8 +311,8 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
             {hasActiveFilters && (
               <button
                 onClick={() => {
-                  setSearchQuery('');
-                  setTypeFilter('all');
+                  setSearchQuery("");
+                  setTypeFilter("all");
                   onSelectCategory(null);
                   setCurrentPage(1);
                 }}
@@ -294,12 +333,12 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
             <tr className="border-b border-slate-200 bg-slate-50/70 text-[11px] font-semibold text-slate-500 tracking-wider">
               <th className="py-2.5 px-4 sm:px-6">
                 <button
-                  onClick={() => handleSort('date')}
+                  onClick={() => handleSort("date")}
                   className="inline-flex items-center gap-1 hover:text-slate-800 transition-colors uppercase"
                 >
                   <span>Date</span>
-                  {sortField === 'date' ? (
-                    sortOrder === 'asc' ? (
+                  {sortField === "date" ? (
+                    sortOrder === "asc" ? (
                       <ArrowUp className="w-3 h-3 text-slate-900" />
                     ) : (
                       <ArrowDown className="w-3 h-3 text-slate-900" />
@@ -311,12 +350,12 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
               </th>
               <th className="py-2.5 px-4">
                 <button
-                  onClick={() => handleSort('merchant')}
+                  onClick={() => handleSort("merchant")}
                   className="inline-flex items-center gap-1 hover:text-slate-800 transition-colors uppercase"
                 >
                   <span>Merchant & Description</span>
-                  {sortField === 'merchant' ? (
-                    sortOrder === 'asc' ? (
+                  {sortField === "merchant" ? (
+                    sortOrder === "asc" ? (
                       <ArrowUp className="w-3 h-3 text-slate-900" />
                     ) : (
                       <ArrowDown className="w-3 h-3 text-slate-900" />
@@ -328,12 +367,12 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
               </th>
               <th className="py-2.5 px-4 hidden md:table-cell">
                 <button
-                  onClick={() => handleSort('category')}
+                  onClick={() => handleSort("category")}
                   className="inline-flex items-center gap-1 hover:text-slate-800 transition-colors uppercase"
                 >
                   <span>Category</span>
-                  {sortField === 'category' ? (
-                    sortOrder === 'asc' ? (
+                  {sortField === "category" ? (
+                    sortOrder === "asc" ? (
                       <ArrowUp className="w-3 h-3 text-slate-900" />
                     ) : (
                       <ArrowDown className="w-3 h-3 text-slate-900" />
@@ -348,12 +387,12 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
               </th>
               <th className="py-2.5 px-4 sm:px-6 text-right">
                 <button
-                  onClick={() => handleSort('amount')}
+                  onClick={() => handleSort("amount")}
                   className="inline-flex items-center gap-1 hover:text-slate-800 transition-colors uppercase ml-auto"
                 >
                   <span>Amount</span>
-                  {sortField === 'amount' ? (
-                    sortOrder === 'asc' ? (
+                  {sortField === "amount" ? (
+                    sortOrder === "asc" ? (
                       <ArrowUp className="w-3 h-3 text-slate-900" />
                     ) : (
                       <ArrowDown className="w-3 h-3 text-slate-900" />
@@ -390,8 +429,9 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
               </tr>
             ) : (
               paginatedTransactions.map((tx) => {
-                const isExpense = tx.type === 'expense';
-                const catColor = CATEGORY_COLORS[tx.category]?.color || '#64748b';
+                const isExpense = tx.type === "expense";
+                const catColor =
+                  CATEGORY_COLORS[tx.category]?.color || "#64748b";
 
                 return (
                   <tr
@@ -447,10 +487,10 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                     <td className="py-3 px-4 sm:px-6 text-right whitespace-nowrap font-mono tabular-nums font-semibold">
                       <span
                         className={
-                          isExpense ? 'text-slate-900' : 'text-emerald-700'
+                          isExpense ? "text-slate-900" : "text-emerald-700"
                         }
                       >
-                        {isExpense ? '-' : '+'}
+                        {isExpense ? "-" : "+"}
                         {formatCurrency(tx.amount)}
                       </span>
                     </td>
@@ -520,7 +560,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
           </select>
           <span className="font-mono tabular-nums">
             Showing {(currentPage - 1) * pageSize + 1}–
-            {Math.min(currentPage * pageSize, filteredTransactions.length)} of{' '}
+            {Math.min(currentPage * pageSize, filteredTransactions.length)} of{" "}
             {filteredTransactions.length}
           </span>
         </div>

@@ -1,6 +1,38 @@
-import React from "react";
+import {
+  DEFAULT_BUDGET_CONFIGS,
+  INITIAL_TRANSACTIONS,
+} from "@/src/data/mockData";
+import React, { useCallback } from "react";
 
-const Footer = ({ handleResetData }: { handleResetData: any }) => {
+const Footer = ({
+  setTransactions,
+  saveStoredTransactions,
+  setBudgetConfigs,
+  saveStoredBudgets,
+  setSelectedCategory,
+  showToast,
+}: {
+  setTransactions: any;
+  saveStoredTransactions: any;
+  setBudgetConfigs: any;
+  saveStoredBudgets: any;
+  setSelectedCategory: any;
+  showToast: any;
+}) => {
+  const handleResetData = useCallback(async () => {
+    setTransactions(INITIAL_TRANSACTIONS);
+    saveStoredTransactions(INITIAL_TRANSACTIONS);
+    setBudgetConfigs(DEFAULT_BUDGET_CONFIGS);
+    saveStoredBudgets(DEFAULT_BUDGET_CONFIGS);
+    setSelectedCategory(null);
+    showToast("Mock data reset to original defaults.");
+
+    try {
+      await fetch("/api/reset", { method: "POST" });
+    } catch {
+      // Fallback
+    }
+  }, []);
   return (
     <footer className="border-t border-slate-200 bg-white py-6 mt-12 text-center text-xs text-slate-500">
       <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
