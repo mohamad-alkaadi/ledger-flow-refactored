@@ -27,11 +27,12 @@ interface TransactionTableProps {
   transactions: Transaction[];
   selectedCategory: string | null;
   onSelectCategory: (cat: string | null) => void;
-  onEditTransaction: (tx: Transaction) => void;
   onOpenAddModal: () => void;
   setTransactions: any;
   saveStoredTransactions: any;
   showToast: any;
+  setEditingTransaction: any;
+  setIsAddModalOpen: any;
 }
 
 type SortField = "date" | "amount" | "merchant" | "category";
@@ -41,11 +42,12 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
   transactions,
   selectedCategory,
   onSelectCategory,
-  onEditTransaction,
   onOpenAddModal,
   setTransactions,
   saveStoredTransactions,
   showToast,
+  setEditingTransaction,
+  setIsAddModalOpen,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<"all" | TransactionType>("all");
@@ -54,7 +56,10 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-
+  const onEditTransaction = (tx: Transaction) => {
+    setEditingTransaction(tx);
+    setIsAddModalOpen(true);
+  };
   const onDeleteTransaction = useCallback(
     async (id: string) => {
       const updated = transactions.filter((t) => t.id !== id);

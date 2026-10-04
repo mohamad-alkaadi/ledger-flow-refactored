@@ -1,33 +1,66 @@
-import React, { useState, useEffect } from 'react';
-import { ExpenseCategory, MonthlyBudgetConfig } from '../types/expense';
-import { CATEGORY_COLORS, DEFAULT_CATEGORY_BUDGETS } from '../data/mockData';
-import { X, DollarSign, Sliders, Check, RotateCcw } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from "react";
+import { ExpenseCategory, MonthlyBudgetConfig } from "../types/expense";
+import { CATEGORY_COLORS, DEFAULT_CATEGORY_BUDGETS } from "../data/mockData";
+import { X, DollarSign, Sliders, Check, RotateCcw } from "lucide-react";
+import { MONTHS_LIST } from "../data/monthsList";
 
 interface BudgetSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentBudget: MonthlyBudgetConfig;
-  onSaveBudget: (budget: MonthlyBudgetConfig) => void;
-  monthName: string;
+  budgetConfigs: any;
+  setBudgetConfigs: any;
+  saveStoredBudgets: any;
+  showToast: any;
+  selectedMonth: any;
 }
 
 export const BudgetSettingsModal: React.FC<BudgetSettingsModalProps> = ({
   isOpen,
   onClose,
   currentBudget,
-  onSaveBudget,
-  monthName,
+  budgetConfigs,
+  setBudgetConfigs,
+  saveStoredBudgets,
+  showToast,
+  selectedMonth,
 }) => {
-  const [totalBudget, setTotalBudget] = useState(currentBudget.totalBudget.toString());
-  const [categoryBudgets, setCategoryBudgets] = useState<Record<string, number>>(
-    currentBudget.categoryBudgets
+  const [totalBudget, setTotalBudget] = useState(
+    currentBudget.totalBudget.toString(),
   );
-
+  const [categoryBudgets, setCategoryBudgets] = useState<
+    Record<string, number>
+  >(currentBudget.categoryBudgets);
+  const monthName =
+    MONTHS_LIST.find((m: any) => m.value === selectedMonth)?.label.split(
+      " (",
+    )[0] || selectedMonth;
   useEffect(() => {
     setTotalBudget(currentBudget.totalBudget.toString());
     setCategoryBudgets({ ...currentBudget.categoryBudgets });
   }, [currentBudget, isOpen]);
+  const onSaveBudget = useCallback(
+    async (updatedBudget: MonthlyBudgetConfig) => {
+      const updatedConfigs = {
+        ...budgetConfigs,
+        [updatedBudget.month]: updatedBudget,
+      };
+      setBudgetConfigs(updatedConfigs);
+      saveStoredBudgets(updatedConfigs);
+      showToast(`Budget targets updated for ${selectedMonth}.`);
 
+      try {
+        await fetch(`/api/budgets/${updatedBudget.month}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatedBudget),
+        });
+      } catch {
+        // Fallback
+      }
+    },
+    [budgetConfigs, selectedMonth],
+  );
   if (!isOpen) return null;
 
   const handleCategoryChange = (category: string, value: string) => {
@@ -44,10 +77,13 @@ export const BudgetSettingsModal: React.FC<BudgetSettingsModalProps> = ({
       defaultMap[b.category] = b.allocated;
     });
     setCategoryBudgets(defaultMap);
-    setTotalBudget('4500');
+    setTotalBudget("4500");
   };
 
-  const sumCategories = Object.values(categoryBudgets).reduce((sum, v) => sum + v, 0);
+  const sumCategories = Object.values(categoryBudgets).reduce(
+    (sum, v) => sum + v,
+    0,
+  );
   const parsedTotal = parseFloat(totalBudget) || 0;
   const unallocated = parsedTotal - sumCategories;
 
@@ -62,9 +98,9 @@ export const BudgetSettingsModal: React.FC<BudgetSettingsModalProps> = ({
   };
 
   const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(val);
@@ -98,7 +134,10 @@ export const BudgetSettingsModal: React.FC<BudgetSettingsModalProps> = ({
         </div>
 
         {/* Scrollable form body */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+        <form
+          onSubmit={handleSubmit}
+          className="flex-1 overflow-y-auto p-6 space-y-6"
+        >
           {/* Total Budget Target */}
           <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
             <label className="block text-xs font-semibold text-slate-900 uppercase tracking-wide">
@@ -122,7 +161,7 @@ export const BudgetSettingsModal: React.FC<BudgetSettingsModalProps> = ({
               </span>
               <span
                 className={`font-semibold ${
-                  unallocated >= 0 ? 'text-emerald-700' : 'text-rose-600'
+                  unallocated >= 0 ? "text-emerald-700" : "text-rose-600"
                 }`}
               >
                 {unallocated >= 0
@@ -150,12 +189,16 @@ export const BudgetSettingsModal: React.FC<BudgetSettingsModalProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {Object.keys(CATEGORY_COLORS)
-                .filter((cat) => cat !== 'Income & Salary')
+                .filter((cat) => cat !== "Income & Salary")
                 .map((category) => {
                   const currentAllocated = categoryBudgets[category] || 0;
-                  const catColor = CATEGORY_COLORS[category as ExpenseCategory]?.color || '#64748b';
+                  const catColor =
+                    CATEGORY_COLORS[category as ExpenseCategory]?.color ||
+                    "#64748b";
                   const percentOfTotal =
-                    parsedTotal > 0 ? (currentAllocated / parsedTotal) * 100 : 0;
+                    parsedTotal > 0
+                      ? (currentAllocated / parsedTotal) * 100
+                      : 0;
 
                   return (
                     <div

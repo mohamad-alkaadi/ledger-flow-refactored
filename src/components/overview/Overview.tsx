@@ -1,17 +1,15 @@
-import React from "react";
 import { BudgetSummaryCards } from "../BudgetSummaryCards";
 import { CategoryPieChart } from "../charts/CategoryPieChart";
 import { CategoryBarChart } from "../charts/CategoryBarChart";
 import { TransactionTable } from "../TransactionTable";
+import { Transaction } from "@/src/types/expense";
 
 const Overview = ({
   metrics,
-  topCategory,
   dailySpending,
   categorySpending,
   selectedCategory,
   monthTransactions,
-  handleEditTransaction,
   setIsBudgetModalOpen,
   setSelectedCategory,
   setEditingTransaction,
@@ -21,12 +19,10 @@ const Overview = ({
   showToast,
 }: {
   metrics: any;
-  topCategory: any;
   dailySpending: any;
   categorySpending: any;
   selectedCategory: any;
   monthTransactions: any;
-  handleEditTransaction: any;
   setIsBudgetModalOpen: any;
   setSelectedCategory: any;
   setEditingTransaction: any;
@@ -35,6 +31,8 @@ const Overview = ({
   saveStoredTransactions: any;
   showToast: any;
 }) => {
+  const topCategory = categorySpending.length > 0 ? categorySpending[0] : null;
+
   return (
     <div>
       <BudgetSummaryCards
@@ -69,7 +67,6 @@ const Overview = ({
         transactions={monthTransactions}
         selectedCategory={selectedCategory}
         onSelectCategory={setSelectedCategory}
-        onEditTransaction={handleEditTransaction}
         onOpenAddModal={() => {
           setEditingTransaction(null);
           setIsAddModalOpen(true);
@@ -77,6 +74,8 @@ const Overview = ({
         setTransactions={setTransactions}
         saveStoredTransactions={saveStoredTransactions}
         showToast={showToast}
+        setEditingTransaction={setEditingTransaction}
+        setIsAddModalOpen={setIsAddModalOpen}
       />
     </div>
   );

@@ -8,7 +8,6 @@ const Transactions = ({
   setIsAddModalOpen,
   selectedCategory,
   setSelectedCategory,
-  handleEditTransaction,
   selectedMonth,
   setTransactions,
   saveStoredTransactions,
@@ -19,7 +18,6 @@ const Transactions = ({
   setIsAddModalOpen: any;
   selectedCategory: any;
   setSelectedCategory: any;
-  handleEditTransaction: any;
   selectedMonth: any;
   setTransactions: any;
   saveStoredTransactions: any;
@@ -77,7 +75,6 @@ const Transactions = ({
         transactions={monthTransactions}
         selectedCategory={selectedCategory}
         onSelectCategory={setSelectedCategory}
-        onEditTransaction={handleEditTransaction}
         onOpenAddModal={() => {
           setEditingTransaction(null);
           setIsAddModalOpen(true);
@@ -85,6 +82,8 @@ const Transactions = ({
         setTransactions={setTransactions}
         saveStoredTransactions={saveStoredTransactions}
         showToast={showToast}
+        setEditingTransaction={setEditingTransaction}
+        setIsAddModalOpen={setIsAddModalOpen}
       />
     </div>
   );

@@ -7,6 +7,7 @@ import {
   Download,
   Calendar,
 } from "lucide-react";
+import { MONTHS_LIST } from "@/src/data/monthsList";
 
 interface HeaderProps {
   onOpenAddModal: () => void;
@@ -15,7 +16,6 @@ interface HeaderProps {
   setActiveTab: (tab: string) => void;
   selectedMonth: string;
   onMonthChange: (month: string) => void;
-  monthsList: { value: string; label: string }[];
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -25,7 +25,6 @@ export const Header: React.FC<HeaderProps> = ({
   setActiveTab,
   selectedMonth,
   onMonthChange,
-  monthsList,
 }) => {
   return (
     <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200">
@@ -91,7 +90,7 @@ export const Header: React.FC<HeaderProps> = ({
                 className="pl-8 pr-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200/80 rounded-lg border-0 focus:ring-2 focus:ring-slate-900 cursor-pointer transition-colors"
                 aria-label="Select active month"
               >
-                {monthsList.map((m) => (
+                {MONTHS_LIST.map((m) => (
                   <option key={m.value} value={m.value}>
                     {m.label}
                   </option>

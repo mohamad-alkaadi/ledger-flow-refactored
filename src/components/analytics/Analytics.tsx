@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { CategoryAnalyticsBreakdown } from "../CategoryAnalyticsBreakdown";
 import { CategoryTrendComparison } from "../charts/CategoryTrendComparison";
 import { CategoryHealthMatrix } from "../charts/CategoryHealthMatrix";
@@ -10,8 +10,10 @@ const Analytics = ({
   setSelectedCategory,
   setIsBudgetModalOpen,
   setActiveTab,
-  multiMonthTrends,
   metrics,
+  calculateMultiMonthCategoryTrends,
+  transactions,
+  selectedMonth,
 }: {
   categorySpending: any;
   monthTransactions: any;
@@ -19,9 +21,15 @@ const Analytics = ({
   setSelectedCategory: any;
   setIsBudgetModalOpen: any;
   setActiveTab: any;
-  multiMonthTrends: any;
   metrics: any;
+  calculateMultiMonthCategoryTrends: any;
+  transactions: any;
+  selectedMonth: any;
 }) => {
+  const multiMonthTrends = useMemo(() => {
+    return calculateMultiMonthCategoryTrends(transactions, selectedMonth);
+  }, [transactions, selectedMonth]);
+
   return (
     <div>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
