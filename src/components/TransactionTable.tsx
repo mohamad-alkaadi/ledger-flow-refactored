@@ -22,16 +22,12 @@ import {
   ChevronRight,
   Plus,
 } from "lucide-react";
+import { useTransactions } from "../context/TransactionsContext";
 
 interface TransactionTableProps {
-  transactions: Transaction[];
   selectedCategory: string | null;
   onSelectCategory: (cat: string | null) => void;
-  onOpenAddModal: () => void;
-  setTransactions: any;
-  saveStoredTransactions: any;
   showToast: any;
-  setEditingTransaction: any;
   setIsAddModalOpen: any;
 }
 
@@ -39,14 +35,9 @@ type SortField = "date" | "amount" | "merchant" | "category";
 type SortOrder = "asc" | "desc";
 
 export const TransactionTable: React.FC<TransactionTableProps> = ({
-  transactions,
   selectedCategory,
   onSelectCategory,
-  onOpenAddModal,
-  setTransactions,
-  saveStoredTransactions,
   showToast,
-  setEditingTransaction,
   setIsAddModalOpen,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -56,13 +47,20 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const {
+    setEditingTransaction,
+    setTransactions,
+    transactions,
+    saveStoredTransactions,
+  } = useTransactions();
+
   const onEditTransaction = (tx: Transaction) => {
     setEditingTransaction(tx);
     setIsAddModalOpen(true);
   };
   const onDeleteTransaction = useCallback(
     async (id: string) => {
-      const updated = transactions.filter((t) => t.id !== id);
+      const updated = transactions.filter((t: any) => t.id !== id);
       setTransactions(updated);
       saveStoredTransactions(updated);
       showToast("Transaction removed from ledger.");
@@ -78,14 +76,14 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
   // Available unique categories
   const categoriesList = useMemo(() => {
     const set = new Set<string>();
-    transactions.forEach((t) => set.add(t.category));
+    transactions.forEach((t: any) => set.add(t.category));
     return Array.from(set).sort();
   }, [transactions]);
 
   // Filtering & Sorting
   const filteredTransactions = useMemo(() => {
     return transactions
-      .filter((tx) => {
+      .filter((tx: any) => {
         // Type filter
         if (typeFilter !== "all" && tx.type !== typeFilter) return false;
 
@@ -108,7 +106,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
 
         return true;
       })
-      .sort((a, b) => {
+      .sort((a: any, b: any) => {
         let comparison = 0;
         if (sortField === "date") {
           comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
@@ -206,6 +204,10 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
     typeFilter !== "all" ||
     selectedCategory !== null;
 
+  const onOpenAddModal = () => {
+    setEditingTransaction(null);
+    setIsAddModalOpen(true);
+  };
   return (
     <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
       {/* Table Toolbar */}
@@ -433,10 +435,12 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
                 </td>
               </tr>
             ) : (
-              paginatedTransactions.map((tx) => {
+              paginatedTransactions.map((tx: any) => {
                 const isExpense = tx.type === "expense";
                 const catColor =
-                  CATEGORY_COLORS[tx.category]?.color || "#64748b";
+                  (CATEGORY_COLORS as Record<string, { color: string }>)[
+                    tx.category
+                  ]?.color || "#64748b";
 
                 return (
                   <tr

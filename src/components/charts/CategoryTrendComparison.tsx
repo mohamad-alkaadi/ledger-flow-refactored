@@ -1,6 +1,13 @@
-import React, { useState } from 'react';
-import { CategoryMultiMonthTrend } from '../../services/expenseService';
-import { BarChart2, TrendingUp, TrendingDown, Layers, ArrowUpDown } from 'lucide-react';
+import React, { useState } from "react";
+import { CategoryMultiMonthTrend } from "../../services/expenseService";
+import {
+  BarChart2,
+  TrendingUp,
+  TrendingDown,
+  Layers,
+  ArrowUpDown,
+} from "lucide-react";
+import { useTransactions } from "@/src/context/TransactionsContext";
 
 interface CategoryTrendComparisonProps {
   trendsData: {
@@ -9,23 +16,20 @@ interface CategoryTrendComparisonProps {
     prevMonthLabel: string;
     priorMonthLabel: string;
   };
-  selectedCategory: string | null;
-  onSelectCategory: (category: string | null) => void;
 }
 
-export const CategoryTrendComparison: React.FC<CategoryTrendComparisonProps> = ({
-  trendsData,
-  selectedCategory,
-  onSelectCategory,
-}) => {
-  const [viewMode, setViewMode] = useState<'grouped' | 'mom_delta'>('grouped');
-
-  const { trends, currentMonthLabel, prevMonthLabel, priorMonthLabel } = trendsData;
+export const CategoryTrendComparison: React.FC<
+  CategoryTrendComparisonProps
+> = ({ trendsData }) => {
+  const [viewMode, setViewMode] = useState<"grouped" | "mom_delta">("grouped");
+  const { selectedCategory, setSelectedCategory } = useTransactions();
+  const { trends, currentMonthLabel, prevMonthLabel, priorMonthLabel } =
+    trendsData;
 
   const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(val);
@@ -37,9 +41,9 @@ export const CategoryTrendComparison: React.FC<CategoryTrendComparisonProps> = (
   // Maximum value across months for scale
   const maxMonthValue = Math.max(
     ...displayedTrends.map((t) =>
-      Math.max(t.currentAmount, t.prevAmount, t.priorAmount)
+      Math.max(t.currentAmount, t.prevAmount, t.priorAmount),
     ),
-    100
+    100,
   );
 
   return (
@@ -52,12 +56,12 @@ export const CategoryTrendComparison: React.FC<CategoryTrendComparisonProps> = (
           </div>
           <div>
             <h3 className="text-sm font-semibold text-slate-900">
-              {viewMode === 'grouped'
-                ? 'Multi-Month Category Velocity'
-                : 'Month-over-Month Spending Shift'}
+              {viewMode === "grouped"
+                ? "Multi-Month Category Velocity"
+                : "Month-over-Month Spending Shift"}
             </h3>
             <p className="text-xs text-slate-500">
-              {viewMode === 'grouped'
+              {viewMode === "grouped"
                 ? `Compare category spending across ${priorMonthLabel}, ${prevMonthLabel}, and ${currentMonthLabel}`
                 : `Net dollar and percentage change relative to ${prevMonthLabel}`}
             </p>
@@ -67,22 +71,22 @@ export const CategoryTrendComparison: React.FC<CategoryTrendComparisonProps> = (
         {/* View Toggle */}
         <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg shrink-0 self-start sm:self-auto">
           <button
-            onClick={() => setViewMode('grouped')}
+            onClick={() => setViewMode("grouped")}
             className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer ${
-              viewMode === 'grouped'
-                ? 'bg-white text-slate-900 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+              viewMode === "grouped"
+                ? "bg-white text-slate-900 shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
             }`}
           >
             <Layers className="w-3 h-3" />
             <span>3-Month Compare</span>
           </button>
           <button
-            onClick={() => setViewMode('mom_delta')}
+            onClick={() => setViewMode("mom_delta")}
             className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer ${
-              viewMode === 'mom_delta'
-                ? 'bg-white text-slate-900 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+              viewMode === "mom_delta"
+                ? "bg-white text-slate-900 shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
             }`}
           >
             <ArrowUpDown className="w-3 h-3" />
@@ -93,7 +97,7 @@ export const CategoryTrendComparison: React.FC<CategoryTrendComparisonProps> = (
 
       {/* Main Visual Content */}
       <div className="py-4">
-        {viewMode === 'grouped' ? (
+        {viewMode === "grouped" ? (
           /* View 1: 3-Month Grouped Comparison */
           <div className="space-y-4">
             {displayedTrends.map((item) => {
@@ -107,10 +111,10 @@ export const CategoryTrendComparison: React.FC<CategoryTrendComparisonProps> = (
                 <div
                   key={item.category}
                   onClick={() =>
-                    onSelectCategory(isSelected ? null : item.category)
+                    setSelectedCategory(isSelected ? null : item.category)
                   }
                   className={`p-2.5 rounded-lg transition-colors cursor-pointer ${
-                    isSelected ? 'bg-slate-100' : 'hover:bg-slate-50'
+                    isSelected ? "bg-slate-100" : "hover:bg-slate-50"
                   }`}
                 >
                   <div className="flex items-center justify-between text-xs mb-1.5">
@@ -132,7 +136,8 @@ export const CategoryTrendComparison: React.FC<CategoryTrendComparisonProps> = (
                         {prevMonthLabel}: {formatCurrency(item.prevAmount)}
                       </span>
                       <span className="font-bold text-slate-900">
-                        {currentMonthLabel}: {formatCurrency(item.currentAmount)}
+                        {currentMonthLabel}:{" "}
+                        {formatCurrency(item.currentAmount)}
                       </span>
                     </div>
                   </div>
@@ -143,7 +148,9 @@ export const CategoryTrendComparison: React.FC<CategoryTrendComparisonProps> = (
                     <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
                       <div
                         className="h-full bg-slate-900 rounded-full transition-all duration-500"
-                        style={{ width: `${Math.min(100, Math.max(2, curPercent))}%` }}
+                        style={{
+                          width: `${Math.min(100, Math.max(2, curPercent))}%`,
+                        }}
                         title={`${currentMonthLabel}: ${formatCurrency(item.currentAmount)}`}
                       />
                     </div>
@@ -152,7 +159,9 @@ export const CategoryTrendComparison: React.FC<CategoryTrendComparisonProps> = (
                     <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
                       <div
                         className="h-full bg-slate-400 rounded-full transition-all duration-500"
-                        style={{ width: `${Math.min(100, Math.max(2, prevPercent))}%` }}
+                        style={{
+                          width: `${Math.min(100, Math.max(2, prevPercent))}%`,
+                        }}
                         title={`${prevMonthLabel}: ${formatCurrency(item.prevAmount)}`}
                       />
                     </div>
@@ -161,7 +170,9 @@ export const CategoryTrendComparison: React.FC<CategoryTrendComparisonProps> = (
                     <div className="w-full bg-slate-100 rounded-full h-1 overflow-hidden">
                       <div
                         className="h-full bg-slate-300 rounded-full transition-all duration-500"
-                        style={{ width: `${Math.min(100, Math.max(2, priorPercent))}%` }}
+                        style={{
+                          width: `${Math.min(100, Math.max(2, priorPercent))}%`,
+                        }}
                         title={`${priorMonthLabel}: ${formatCurrency(item.priorAmount)}`}
                       />
                     </div>
@@ -182,10 +193,10 @@ export const CategoryTrendComparison: React.FC<CategoryTrendComparisonProps> = (
                 <div
                   key={item.category}
                   onClick={() =>
-                    onSelectCategory(isSelected ? null : item.category)
+                    setSelectedCategory(isSelected ? null : item.category)
                   }
                   className={`p-2.5 rounded-lg transition-colors cursor-pointer flex items-center justify-between gap-4 ${
-                    isSelected ? 'bg-slate-100' : 'hover:bg-slate-50'
+                    isSelected ? "bg-slate-100" : "hover:bg-slate-50"
                   }`}
                 >
                   <div className="flex items-center gap-2 min-w-0">
@@ -198,24 +209,26 @@ export const CategoryTrendComparison: React.FC<CategoryTrendComparisonProps> = (
                         {item.category}
                       </span>
                       <span className="text-[11px] text-slate-400 font-mono">
-                        {prevMonthLabel}: {formatCurrency(item.prevAmount)} → {currentMonthLabel}: {formatCurrency(item.currentAmount)}
+                        {prevMonthLabel}: {formatCurrency(item.prevAmount)} →{" "}
+                        {currentMonthLabel}:{" "}
+                        {formatCurrency(item.currentAmount)}
                       </span>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3 shrink-0 font-mono tabular-nums text-right">
                     <span className="text-xs text-slate-600">
-                      {hasIncreased ? '+' : ''}
+                      {hasIncreased ? "+" : ""}
                       {formatCurrency(item.momDelta)}
                     </span>
 
                     <span
                       className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-md ${
                         isFlat
-                          ? 'bg-slate-100 text-slate-600'
+                          ? "bg-slate-100 text-slate-600"
                           : hasIncreased
-                          ? 'bg-rose-50 text-rose-700'
-                          : 'bg-emerald-50 text-emerald-700'
+                            ? "bg-rose-50 text-rose-700"
+                            : "bg-emerald-50 text-emerald-700"
                       }`}
                     >
                       {hasIncreased ? (
@@ -224,7 +237,7 @@ export const CategoryTrendComparison: React.FC<CategoryTrendComparisonProps> = (
                         <TrendingDown className="w-3 h-3 text-emerald-600" />
                       )}
                       <span>
-                        {hasIncreased ? '+' : ''}
+                        {hasIncreased ? "+" : ""}
                         {item.momDeltaPercent.toFixed(0)}%
                       </span>
                     </span>
@@ -238,16 +251,19 @@ export const CategoryTrendComparison: React.FC<CategoryTrendComparisonProps> = (
 
       {/* Footer Legend */}
       <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-        {viewMode === 'grouped' ? (
+        {viewMode === "grouped" ? (
           <div className="flex items-center gap-3 sm:gap-4">
             <span className="flex items-center gap-1.5 font-medium text-slate-800">
-              <span className="w-3 h-2 rounded-sm bg-slate-900" /> {currentMonthLabel} (Current)
+              <span className="w-3 h-2 rounded-sm bg-slate-900" />{" "}
+              {currentMonthLabel} (Current)
             </span>
             <span className="flex items-center gap-1.5 text-slate-600">
-              <span className="w-3 h-1.5 rounded-sm bg-slate-400" /> {prevMonthLabel}
+              <span className="w-3 h-1.5 rounded-sm bg-slate-400" />{" "}
+              {prevMonthLabel}
             </span>
             <span className="flex items-center gap-1.5 text-slate-400">
-              <span className="w-3 h-1 rounded-sm bg-slate-300" /> {priorMonthLabel}
+              <span className="w-3 h-1 rounded-sm bg-slate-300" />{" "}
+              {priorMonthLabel}
             </span>
           </div>
         ) : (

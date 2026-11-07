@@ -1,40 +1,33 @@
-import React, { useState } from 'react';
-import { CategorySpending, Transaction } from '../../types/expense';
+import React, { useState } from "react";
+import { CategorySpending } from "../../types/expense";
 import {
-  ShieldAlert,
   ShieldCheck,
   AlertTriangle,
   ArrowRight,
-  Filter,
   CheckCircle2,
-  Calendar,
-  DollarSign,
-  Tag,
-} from 'lucide-react';
+} from "lucide-react";
+import { useTransactions } from "@/src/context/TransactionsContext";
 
 interface CategoryHealthMatrixProps {
   categories: CategorySpending[];
-  transactions: Transaction[];
-  selectedCategory: string | null;
-  onSelectCategory: (cat: string | null) => void;
   onOpenBudgetModal: () => void;
-  onViewInTransactions: (cat: string) => void;
+  setActiveTab: any;
 }
 
 export const CategoryHealthMatrix: React.FC<CategoryHealthMatrixProps> = ({
   categories,
-  transactions,
-  selectedCategory,
-  onSelectCategory,
   onOpenBudgetModal,
-  onViewInTransactions,
+  setActiveTab,
 }) => {
-  const [filterStatus, setFilterStatus] = useState<'all' | 'over' | 'warning' | 'safe'>('all');
-
+  const [filterStatus, setFilterStatus] = useState<
+    "all" | "over" | "warning" | "safe"
+  >("all");
+  const { selectedCategory, transactions, setSelectedCategory } =
+    useTransactions();
   const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
       minimumFractionDigits: 2,
     }).format(val);
   };
@@ -48,7 +41,10 @@ export const CategoryHealthMatrix: React.FC<CategoryHealthMatrixProps> = ({
   // Transactions specific to the active category
   const activeCategoryTransactions = activeCategory
     ? transactions
-        .filter((t) => t.category === activeCategory.category && t.type === 'expense')
+        .filter(
+          (t: any) =>
+            t.category === activeCategory.category && t.type === "expense",
+        )
         .slice(0, 4)
     : [];
 
@@ -56,12 +52,16 @@ export const CategoryHealthMatrix: React.FC<CategoryHealthMatrixProps> = ({
   const filteredCategories = categories.filter((cat) => {
     if (cat.allocated <= 0 && cat.amount <= 0) return false;
     const ratio = cat.allocated > 0 ? (cat.amount / cat.allocated) * 100 : 0;
-    if (filterStatus === 'over') return ratio > 100;
-    if (filterStatus === 'warning') return ratio >= 80 && ratio <= 100;
-    if (filterStatus === 'safe') return ratio < 80;
+    if (filterStatus === "over") return ratio > 100;
+    if (filterStatus === "warning") return ratio >= 80 && ratio <= 100;
+    if (filterStatus === "safe") return ratio < 80;
     return true;
   });
 
+  const onViewInTransactions = (cat: string) => {
+    setSelectedCategory(cat);
+    setActiveTab("transactions");
+  };
   return (
     <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs flex flex-col justify-between h-full">
       {/* Header */}
@@ -75,7 +75,8 @@ export const CategoryHealthMatrix: React.FC<CategoryHealthMatrixProps> = ({
               Category Health & Inspector
             </h3>
             <p className="text-xs text-slate-500">
-              Interactive allocation audit, utilization gauges, and transaction drilldown
+              Interactive allocation audit, utilization gauges, and transaction
+              drilldown
             </p>
           </div>
         </div>
@@ -83,41 +84,41 @@ export const CategoryHealthMatrix: React.FC<CategoryHealthMatrixProps> = ({
         {/* Filter chips */}
         <div className="flex items-center gap-1 p-0.5 bg-slate-100 rounded-lg text-xs">
           <button
-            onClick={() => setFilterStatus('all')}
+            onClick={() => setFilterStatus("all")}
             className={`px-2 py-1 rounded-md transition-colors font-medium cursor-pointer ${
-              filterStatus === 'all'
-                ? 'bg-white text-slate-900 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+              filterStatus === "all"
+                ? "bg-white text-slate-900 shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
             }`}
           >
             All
           </button>
           <button
-            onClick={() => setFilterStatus('over')}
+            onClick={() => setFilterStatus("over")}
             className={`px-2 py-1 rounded-md transition-colors font-medium cursor-pointer ${
-              filterStatus === 'over'
-                ? 'bg-white text-rose-700 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+              filterStatus === "over"
+                ? "bg-white text-rose-700 shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
             }`}
           >
             Over Limit
           </button>
           <button
-            onClick={() => setFilterStatus('warning')}
+            onClick={() => setFilterStatus("warning")}
             className={`px-2 py-1 rounded-md transition-colors font-medium cursor-pointer ${
-              filterStatus === 'warning'
-                ? 'bg-white text-amber-700 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+              filterStatus === "warning"
+                ? "bg-white text-amber-700 shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
             }`}
           >
             Near Limit
           </button>
           <button
-            onClick={() => setFilterStatus('safe')}
+            onClick={() => setFilterStatus("safe")}
             className={`px-2 py-1 rounded-md transition-colors font-medium cursor-pointer ${
-              filterStatus === 'safe'
-                ? 'bg-white text-emerald-700 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+              filterStatus === "safe"
+                ? "bg-white text-emerald-700 shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
             }`}
           >
             Safe
@@ -144,11 +145,11 @@ export const CategoryHealthMatrix: React.FC<CategoryHealthMatrixProps> = ({
               return (
                 <button
                   key={item.category}
-                  onClick={() => onSelectCategory(item.category)}
+                  onClick={() => setSelectedCategory(item.category)}
                   className={`w-full p-2.5 rounded-lg text-left transition-all cursor-pointer flex flex-col gap-1.5 ${
                     isSelected
-                      ? 'bg-slate-900 text-white shadow-xs'
-                      : 'bg-slate-50/80 hover:bg-slate-100 text-slate-800'
+                      ? "bg-slate-900 text-white shadow-xs"
+                      : "bg-slate-50/80 hover:bg-slate-100 text-slate-800"
                   }`}
                 >
                   <div className="flex items-center justify-between text-xs">
@@ -167,13 +168,13 @@ export const CategoryHealthMatrix: React.FC<CategoryHealthMatrixProps> = ({
                         className={`text-[11px] font-semibold px-1.5 py-0.5 rounded ${
                           isSelected
                             ? isOver
-                              ? 'bg-rose-900/80 text-rose-200'
-                              : 'bg-slate-800 text-slate-200'
+                              ? "bg-rose-900/80 text-rose-200"
+                              : "bg-slate-800 text-slate-200"
                             : isOver
-                            ? 'bg-rose-100 text-rose-700'
-                            : isNear
-                            ? 'bg-amber-100 text-amber-800'
-                            : 'bg-emerald-100 text-emerald-800'
+                              ? "bg-rose-100 text-rose-700"
+                              : isNear
+                                ? "bg-amber-100 text-amber-800"
+                                : "bg-emerald-100 text-emerald-800"
                         }`}
                       >
                         {ratio.toFixed(0)}%
@@ -184,18 +185,18 @@ export const CategoryHealthMatrix: React.FC<CategoryHealthMatrixProps> = ({
                   {/* Progress Bar */}
                   <div
                     className={`w-full rounded-full h-1.5 overflow-hidden ${
-                      isSelected ? 'bg-slate-800' : 'bg-slate-200'
+                      isSelected ? "bg-slate-800" : "bg-slate-200"
                     }`}
                   >
                     <div
                       className={`h-full rounded-full transition-all duration-300 ${
                         isOver
-                          ? 'bg-rose-500'
+                          ? "bg-rose-500"
                           : isNear
-                          ? 'bg-amber-500'
-                          : isSelected
-                          ? 'bg-emerald-400'
-                          : 'bg-emerald-600'
+                            ? "bg-amber-500"
+                            : isSelected
+                              ? "bg-emerald-400"
+                              : "bg-emerald-600"
                       }`}
                       style={{ width: `${Math.min(100, Math.max(0, ratio))}%` }}
                     />
@@ -222,15 +223,16 @@ export const CategoryHealthMatrix: React.FC<CategoryHealthMatrixProps> = ({
                     </h4>
                   </div>
                   <p className="text-[11px] text-slate-500 mt-0.5">
-                    {activeCategory.count} transaction{activeCategory.count === 1 ? '' : 's'} recorded this cycle
+                    {activeCategory.count} transaction
+                    {activeCategory.count === 1 ? "" : "s"} recorded this cycle
                   </p>
                 </div>
 
                 <span
                   className={`text-[11px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1 ${
                     activeCategory.amount > activeCategory.allocated
-                      ? 'bg-rose-100 text-rose-700'
-                      : 'bg-emerald-100 text-emerald-700'
+                      ? "bg-rose-100 text-rose-700"
+                      : "bg-emerald-100 text-emerald-700"
                   }`}
                 >
                   {activeCategory.amount > activeCategory.allocated ? (
@@ -277,7 +279,7 @@ export const CategoryHealthMatrix: React.FC<CategoryHealthMatrixProps> = ({
                       No charges logged this month
                     </div>
                   ) : (
-                    activeCategoryTransactions.map((tx) => (
+                    activeCategoryTransactions.map((tx: any) => (
                       <div
                         key={tx.id}
                         className="p-1.5 bg-white border border-slate-200/70 rounded-md flex items-center justify-between text-[11px]"
@@ -327,10 +329,12 @@ export const CategoryHealthMatrix: React.FC<CategoryHealthMatrixProps> = ({
 
       {/* Footer */}
       <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-        <span>Click any category above to inspect its real-time ledger health</span>
+        <span>
+          Click any category above to inspect its real-time ledger health
+        </span>
         {selectedCategory && (
           <button
-            onClick={() => onSelectCategory(null)}
+            onClick={() => setSelectedCategory(null)}
             className="text-slate-700 hover:underline font-medium cursor-pointer"
           >
             Clear selection

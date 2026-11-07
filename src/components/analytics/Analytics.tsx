@@ -2,30 +2,13 @@ import React, { useMemo } from "react";
 import { CategoryAnalyticsBreakdown } from "../CategoryAnalyticsBreakdown";
 import { CategoryTrendComparison } from "../charts/CategoryTrendComparison";
 import { CategoryHealthMatrix } from "../charts/CategoryHealthMatrix";
+import { useTransactions } from "@/src/context/TransactionsContext";
+import { calculateMultiMonthCategoryTrends } from "@/src/services/expenseService";
+import { useBudgetAndSpending } from "@/src/context/BudgetAndSpendingContext";
 
-const Analytics = ({
-  categorySpending,
-  monthTransactions,
-  selectedCategory,
-  setSelectedCategory,
-  setIsBudgetModalOpen,
-  setActiveTab,
-  metrics,
-  calculateMultiMonthCategoryTrends,
-  transactions,
-  selectedMonth,
-}: {
-  categorySpending: any;
-  monthTransactions: any;
-  selectedCategory: any;
-  setSelectedCategory: any;
-  setIsBudgetModalOpen: any;
-  setActiveTab: any;
-  metrics: any;
-  calculateMultiMonthCategoryTrends: any;
-  transactions: any;
-  selectedMonth: any;
-}) => {
+const Analytics = ({ setActiveTab }: { setActiveTab: any }) => {
+  const { transactions, selectedMonth } = useTransactions();
+  const { categorySpending, setIsBudgetModalOpen } = useBudgetAndSpending();
   const multiMonthTrends = useMemo(() => {
     return calculateMultiMonthCategoryTrends(transactions, selectedMonth);
   }, [transactions, selectedMonth]);
@@ -37,34 +20,20 @@ const Analytics = ({
         <div className="lg:col-span-6">
           <CategoryHealthMatrix
             categories={categorySpending}
-            transactions={monthTransactions}
-            selectedCategory={selectedCategory}
-            onSelectCategory={setSelectedCategory}
             onOpenBudgetModal={() => setIsBudgetModalOpen(true)}
-            onViewInTransactions={(cat) => {
-              setSelectedCategory(cat);
-              setActiveTab("transactions");
-            }}
+            setActiveTab={setActiveTab}
           />
         </div>
 
         {/* Category Multi-Month Velocity & MoM Shift */}
         <div className="lg:col-span-6">
-          <CategoryTrendComparison
-            trendsData={multiMonthTrends}
-            selectedCategory={selectedCategory}
-            onSelectCategory={setSelectedCategory}
-          />
+          <CategoryTrendComparison trendsData={multiMonthTrends} />
         </div>
       </div>
       <CategoryAnalyticsBreakdown
         categories={categorySpending}
-        totalExpenses={metrics.totalExpenses}
-        onSelectCategory={(cat) => {
-          setSelectedCategory(cat);
-          setActiveTab("transactions");
-        }}
         onOpenBudgetModal={() => setIsBudgetModalOpen(true)}
+        setActiveTab={setActiveTab}
       />
     </div>
   );

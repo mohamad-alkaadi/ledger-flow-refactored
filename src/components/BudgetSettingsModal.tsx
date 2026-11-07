@@ -3,42 +3,39 @@ import { ExpenseCategory, MonthlyBudgetConfig } from "../types/expense";
 import { CATEGORY_COLORS, DEFAULT_CATEGORY_BUDGETS } from "../data/mockData";
 import { X, DollarSign, Sliders, Check, RotateCcw } from "lucide-react";
 import { MONTHS_LIST } from "../data/monthsList";
+import { useTransactions } from "../context/TransactionsContext";
+import { useBudgetAndSpending } from "../context/BudgetAndSpendingContext";
+import { saveStoredBudgets } from "../services/expenseService";
 
 interface BudgetSettingsModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  currentBudget: MonthlyBudgetConfig;
-  budgetConfigs: any;
-  setBudgetConfigs: any;
-  saveStoredBudgets: any;
   showToast: any;
-  selectedMonth: any;
 }
 
 export const BudgetSettingsModal: React.FC<BudgetSettingsModalProps> = ({
-  isOpen,
-  onClose,
-  currentBudget,
-  budgetConfigs,
-  setBudgetConfigs,
-  saveStoredBudgets,
   showToast,
-  selectedMonth,
 }) => {
+  const {
+    setIsBudgetModalOpen,
+    currentBudgetConfig,
+    isBudgetModalOpen,
+    budgetConfigs,
+    setBudgetConfigs,
+  } = useBudgetAndSpending();
   const [totalBudget, setTotalBudget] = useState(
-    currentBudget.totalBudget.toString(),
+    currentBudgetConfig.totalBudget.toString(),
   );
   const [categoryBudgets, setCategoryBudgets] = useState<
     Record<string, number>
-  >(currentBudget.categoryBudgets);
+  >(currentBudgetConfig.categoryBudgets);
+  const { selectedMonth } = useTransactions();
   const monthName =
     MONTHS_LIST.find((m: any) => m.value === selectedMonth)?.label.split(
       " (",
     )[0] || selectedMonth;
   useEffect(() => {
-    setTotalBudget(currentBudget.totalBudget.toString());
-    setCategoryBudgets({ ...currentBudget.categoryBudgets });
-  }, [currentBudget, isOpen]);
+    setTotalBudget(currentBudgetConfig.totalBudget.toString());
+    setCategoryBudgets({ ...currentBudgetConfig.categoryBudgets });
+  }, [currentBudgetConfig, isBudgetModalOpen]);
   const onSaveBudget = useCallback(
     async (updatedBudget: MonthlyBudgetConfig) => {
       const updatedConfigs = {
@@ -61,7 +58,7 @@ export const BudgetSettingsModal: React.FC<BudgetSettingsModalProps> = ({
     },
     [budgetConfigs, selectedMonth],
   );
-  if (!isOpen) return null;
+  if (!isBudgetModalOpen) return null;
 
   const handleCategoryChange = (category: string, value: string) => {
     const num = parseFloat(value) || 0;
@@ -90,11 +87,11 @@ export const BudgetSettingsModal: React.FC<BudgetSettingsModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSaveBudget({
-      month: currentBudget.month,
+      month: currentBudgetConfig.month,
       totalBudget: parsedTotal,
       categoryBudgets,
     });
-    onClose();
+    setIsBudgetModalOpen(false);
   };
 
   const formatCurrency = (val: number) => {
@@ -110,7 +107,7 @@ export const BudgetSettingsModal: React.FC<BudgetSettingsModalProps> = ({
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs"
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        if (e.target === e.currentTarget) setIsBudgetModalOpen(false);
       }}
     >
       <div className="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
@@ -126,7 +123,7 @@ export const BudgetSettingsModal: React.FC<BudgetSettingsModalProps> = ({
             </p>
           </div>
           <button
-            onClick={onClose}
+            onClick={() => setIsBudgetModalOpen(false)}
             className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
           >
             <X className="w-4 h-4" />
@@ -246,7 +243,7 @@ export const BudgetSettingsModal: React.FC<BudgetSettingsModalProps> = ({
         <div className="px-6 py-4 border-t border-slate-200 bg-slate-50/50 flex items-center justify-between shrink-0">
           <button
             type="button"
-            onClick={onClose}
+            onClick={() => setIsBudgetModalOpen(false)}
             className="px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-200/60 rounded-lg transition-colors"
           >
             Cancel

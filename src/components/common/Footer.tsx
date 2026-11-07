@@ -1,24 +1,16 @@
+import { useBudgetAndSpending } from "@/src/context/BudgetAndSpendingContext";
+import { useTransactions } from "@/src/context/TransactionsContext";
 import {
   DEFAULT_BUDGET_CONFIGS,
   INITIAL_TRANSACTIONS,
 } from "@/src/data/mockData";
-import React, { useCallback } from "react";
+import { saveStoredBudgets } from "@/src/services/expenseService";
+import { useCallback } from "react";
 
-const Footer = ({
-  setTransactions,
-  saveStoredTransactions,
-  setBudgetConfigs,
-  saveStoredBudgets,
-  setSelectedCategory,
-  showToast,
-}: {
-  setTransactions: any;
-  saveStoredTransactions: any;
-  setBudgetConfigs: any;
-  saveStoredBudgets: any;
-  setSelectedCategory: any;
-  showToast: any;
-}) => {
+const Footer = ({ showToast }: { showToast: any }) => {
+  const { setTransactions, saveStoredTransactions, setSelectedCategory } =
+    useTransactions();
+  const { setBudgetConfigs } = useBudgetAndSpending();
   const handleResetData = useCallback(async () => {
     setTransactions(INITIAL_TRANSACTIONS);
     saveStoredTransactions(INITIAL_TRANSACTIONS);

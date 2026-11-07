@@ -1,12 +1,9 @@
+import { useTransactions } from "@/src/context/TransactionsContext";
 import { Filter, X } from "lucide-react";
 
-const FilteringByHeader = ({
-  selectedCategory,
-  setSelectedCategory,
-}: {
-  selectedCategory: any;
-  setSelectedCategory: any;
-}) => {
+const FilteringByHeader = () => {
+  const { selectedCategory, setSelectedCategory } = useTransactions();
+  if (!selectedCategory) return null;
   return (
     <div className="bg-slate-900 text-white p-3 rounded-xl flex items-center justify-between shadow-xs">
       <div className="flex items-center gap-2 text-xs">

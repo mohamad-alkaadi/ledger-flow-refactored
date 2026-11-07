@@ -5,7 +5,6 @@ import {
   Transaction,
   TransactionType,
 } from "../types/expense";
-import { CATEGORY_COLORS, DEFAULT_CATEGORY_BUDGETS } from "../data/mockData";
 import {
   X,
   DollarSign,
@@ -15,17 +14,10 @@ import {
   FileText,
   Check,
 } from "lucide-react";
+import { useTransactions } from "../context/TransactionsContext";
+import { useBudgetAndSpending } from "../context/BudgetAndSpendingContext";
 
 interface AddTransactionModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  // onSave: (transactionData: Omit<Transaction, "id">, editId?: string) => void;
-  editingTransaction?: Transaction | null;
-  defaultMonth?: string;
-  transactions: any;
-  setTransactions: any;
-  saveStoredTransactions: any;
-  setEditingTransaction: any;
   showToast: any;
 }
 
@@ -46,23 +38,24 @@ const EXPENSE_CATEGORIES: ExpenseCategory[] = [
 const INCOME_CATEGORIES: ExpenseCategory[] = ["Income & Salary", "Other"];
 
 export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
-  isOpen,
-  onClose,
-  // onSave,
-  editingTransaction,
-  defaultMonth = "2026-09",
-  transactions,
-  setTransactions,
-  saveStoredTransactions,
-  setEditingTransaction,
   showToast,
 }) => {
+  const {
+    selectedMonth,
+    transactions,
+    setTransactions,
+    saveStoredTransactions,
+    setEditingTransaction,
+    editingTransaction,
+  } = useTransactions();
+  const { isAddModalOpen, setIsAddModalOpen } = useBudgetAndSpending();
+  const activeMonth = selectedMonth || "2026-09";
   const [type, setType] = useState<TransactionType>("expense");
   const [amount, setAmount] = useState("");
   const [merchant, setMerchant] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState<ExpenseCategory>("Food & Groceries");
-  const [date, setDate] = useState(`${defaultMonth}-27`);
+  const [date, setDate] = useState(`${activeMonth}-27`);
   const [paymentMethod, setPaymentMethod] =
     useState<PaymentMethod>("credit_card");
   const [notes, setNotes] = useState("");
@@ -130,14 +123,14 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
       setMerchant("");
       setDescription("");
       setCategory("Food & Groceries");
-      setDate(`${defaultMonth}-27`);
+      setDate(`${activeMonth}-27`);
       setPaymentMethod("credit_card");
       setNotes("");
     }
     setErrors({});
-  }, [editingTransaction, defaultMonth, isOpen]);
+  }, [editingTransaction, activeMonth, isAddModalOpen]);
 
-  if (!isOpen) return null;
+  if (!isAddModalOpen) return null;
 
   const validate = () => {
     const errs: Record<string, string> = {};
@@ -182,6 +175,10 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   const activeCategories =
     type === "expense" ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
 
+  const onClose = () => {
+    setIsAddModalOpen(false);
+    setEditingTransaction(null);
+  };
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs"

@@ -3,34 +3,18 @@ import { CategoryPieChart } from "../charts/CategoryPieChart";
 import { CategoryBarChart } from "../charts/CategoryBarChart";
 import { TransactionTable } from "../TransactionTable";
 import { Transaction } from "@/src/types/expense";
+import { useTransactions } from "@/src/context/TransactionsContext";
+import { useBudgetAndSpending } from "@/src/context/BudgetAndSpendingContext";
 
-const Overview = ({
-  metrics,
-  dailySpending,
-  categorySpending,
-  selectedCategory,
-  monthTransactions,
-  setIsBudgetModalOpen,
-  setSelectedCategory,
-  setEditingTransaction,
-  setIsAddModalOpen,
-  setTransactions,
-  saveStoredTransactions,
-  showToast,
-}: {
-  metrics: any;
-  dailySpending: any;
-  categorySpending: any;
-  selectedCategory: any;
-  monthTransactions: any;
-  setIsBudgetModalOpen: any;
-  setSelectedCategory: any;
-  setEditingTransaction: any;
-  setIsAddModalOpen: any;
-  setTransactions: any;
-  saveStoredTransactions: any;
-  showToast: any;
-}) => {
+const Overview = ({ showToast }: { showToast: any }) => {
+  const { selectedCategory, setSelectedCategory } = useTransactions();
+  const {
+    metrics,
+    categorySpending,
+    dailySpending,
+    setIsBudgetModalOpen,
+    setIsAddModalOpen,
+  } = useBudgetAndSpending();
   const topCategory = categorySpending.length > 0 ? categorySpending[0] : null;
 
   return (
@@ -64,17 +48,9 @@ const Overview = ({
         </div>
       </div>
       <TransactionTable
-        transactions={monthTransactions}
         selectedCategory={selectedCategory}
         onSelectCategory={setSelectedCategory}
-        onOpenAddModal={() => {
-          setEditingTransaction(null);
-          setIsAddModalOpen(true);
-        }}
-        setTransactions={setTransactions}
-        saveStoredTransactions={saveStoredTransactions}
         showToast={showToast}
-        setEditingTransaction={setEditingTransaction}
         setIsAddModalOpen={setIsAddModalOpen}
       />
     </div>

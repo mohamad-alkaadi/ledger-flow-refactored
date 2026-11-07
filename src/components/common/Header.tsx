@@ -1,31 +1,31 @@
 import React from "react";
-import {
-  Wallet,
-  Plus,
-  SlidersHorizontal,
-  RotateCcw,
-  Download,
-  Calendar,
-} from "lucide-react";
+import { Wallet, Plus, SlidersHorizontal, Calendar } from "lucide-react";
 import { MONTHS_LIST } from "@/src/data/monthsList";
+import { useTransactions } from "@/src/context/TransactionsContext";
 
 interface HeaderProps {
-  onOpenAddModal: () => void;
-  onOpenBudgetModal: () => void;
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  selectedMonth: string;
-  onMonthChange: (month: string) => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({
-  onOpenAddModal,
-  onOpenBudgetModal,
-  activeTab,
-  setActiveTab,
-  selectedMonth,
-  onMonthChange,
-}) => {
+export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
+  const {
+    setEditingTransaction,
+    setIsAddModalOpen,
+    setIsBudgetModalOpen,
+    selectedMonth,
+    setSelectedMonth,
+    setSelectedCategory,
+  } = useTransactions();
+
+  const onOpenAddModal = () => {
+    setEditingTransaction(null);
+    setIsAddModalOpen(true);
+  };
+  const onMonthChange = (m) => {
+    setSelectedMonth(m);
+    setSelectedCategory(null);
+  };
   return (
     <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -100,7 +100,7 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* Budget Configuration button */}
             <button
-              onClick={onOpenBudgetModal}
+              onClick={() => setIsBudgetModalOpen(true)}
               title="Edit Budget Targets"
               className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors whitespace-nowrap shadow-xs"
             >

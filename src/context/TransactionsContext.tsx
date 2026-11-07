@@ -18,11 +18,16 @@ interface TransactionsContextType {
   setSelectedMonth: any;
   transactions: any;
   setTransactions: any;
+  isAddModalOpen: any;
+  setIsAddModalOpen: any;
+  isBudgetModalOpen: any;
+  setIsBudgetModalOpen: any;
   selectedCategory: any;
   setSelectedCategory: any;
   editingTransaction: any;
   setEditingTransaction: any;
   monthTransactions: any;
+  saveStoredTransactions: any;
 }
 interface TransactionsProviderProps {
   children: ReactNode;
@@ -38,6 +43,8 @@ export const TransactionsProvider: React.FC<TransactionsProviderProps> = ({
   const [transactions, setTransactions] = useState<Transaction[]>(() =>
     getStoredTransactions(),
   );
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [editingTransaction, setEditingTransaction] =
     useState<Transaction | null>(null);
@@ -56,15 +63,22 @@ export const TransactionsProvider: React.FC<TransactionsProviderProps> = ({
       setSelectedMonth,
       transactions,
       setTransactions,
+      isAddModalOpen,
+      setIsAddModalOpen,
+      isBudgetModalOpen,
+      setIsBudgetModalOpen,
       selectedCategory,
       setSelectedCategory,
       editingTransaction,
       setEditingTransaction,
       monthTransactions,
+      saveStoredTransactions,
     }),
     [
       selectedMonth,
       transactions,
+      isAddModalOpen,
+      isBudgetModalOpen,
       selectedCategory,
       editingTransaction,
       monthTransactions,
@@ -80,7 +94,9 @@ export const TransactionsProvider: React.FC<TransactionsProviderProps> = ({
 export const useTransactions = (): TransactionsContextType => {
   const context = useContext(TransactionsContext);
   if (!context) {
-    throw new Error("useTransactions must be used within a ThemeProvider");
+    throw new Error(
+      "useTransactions must be used within a TransactionsProvider",
+    );
   }
   return context;
 };

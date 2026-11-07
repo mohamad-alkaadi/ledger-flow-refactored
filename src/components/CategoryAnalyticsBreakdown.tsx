@@ -1,28 +1,35 @@
-import React from 'react';
-import { CategorySpending } from '../types/expense';
-import { AlertTriangle, CheckCircle2, TrendingUp, TrendingDown, ArrowRight } from 'lucide-react';
+import React from "react";
+import { CategorySpending } from "../types/expense";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  TrendingUp,
+  TrendingDown,
+  ArrowRight,
+} from "lucide-react";
+import { useTransactions } from "../context/TransactionsContext";
 
 interface CategoryAnalyticsBreakdownProps {
   categories: CategorySpending[];
-  totalExpenses: number;
-  onSelectCategory: (category: string) => void;
   onOpenBudgetModal: () => void;
+  setActiveTab: any;
 }
 
-export const CategoryAnalyticsBreakdown: React.FC<CategoryAnalyticsBreakdownProps> = ({
-  categories,
-  totalExpenses,
-  onSelectCategory,
-  onOpenBudgetModal,
-}) => {
+export const CategoryAnalyticsBreakdown: React.FC<
+  CategoryAnalyticsBreakdownProps
+> = ({ categories, onOpenBudgetModal, setActiveTab }) => {
+  const { setSelectedCategory } = useTransactions();
   const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
       minimumFractionDigits: 2,
     }).format(val);
   };
-
+  const onSelectCategory = (cat: string) => {
+    setSelectedCategory(cat);
+    setActiveTab("transactions");
+  };
   return (
     <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
       <div className="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -51,7 +58,9 @@ export const CategoryAnalyticsBreakdown: React.FC<CategoryAnalyticsBreakdownProp
               <th className="py-2.5 px-4 text-right">Actual Spent</th>
               <th className="py-2.5 px-4 text-right">Target Budget</th>
               <th className="py-2.5 px-4 text-right">Budget Variance</th>
-              <th className="py-2.5 px-4 text-right hidden sm:table-cell">Share of Spend</th>
+              <th className="py-2.5 px-4 text-right hidden sm:table-cell">
+                Share of Spend
+              </th>
               <th className="py-2.5 px-4 sm:px-6 text-right">Status</th>
             </tr>
           </thead>
@@ -93,7 +102,7 @@ export const CategoryAnalyticsBreakdown: React.FC<CategoryAnalyticsBreakdownProp
                   <td className="py-3 px-4 text-right whitespace-nowrap font-mono tabular-nums">
                     <span
                       className={`inline-flex items-center gap-1 font-semibold ${
-                        isOver ? 'text-rose-600' : 'text-emerald-700'
+                        isOver ? "text-rose-600" : "text-emerald-700"
                       }`}
                     >
                       {isOver ? (
@@ -101,7 +110,7 @@ export const CategoryAnalyticsBreakdown: React.FC<CategoryAnalyticsBreakdownProp
                       ) : (
                         <TrendingDown className="w-3 h-3 text-emerald-600" />
                       )}
-                      {isOver ? '+' : '-'}
+                      {isOver ? "+" : "-"}
                       {formatCurrency(Math.abs(cat.variance))}
                     </span>
                   </td>

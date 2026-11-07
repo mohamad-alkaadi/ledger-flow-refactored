@@ -1,5 +1,3 @@
-import React from 'react';
-import { CategorySpending, DashboardMetrics } from '../types/expense';
 import {
   PieChart,
   TrendingUp,
@@ -8,59 +6,55 @@ import {
   SlidersHorizontal,
   Layers,
   Sparkles,
-  ArrowUpRight,
-} from 'lucide-react';
-
-interface CategoryAnalyticsCardsProps {
-  categories: CategorySpending[];
-  metrics: DashboardMetrics;
-  onOpenBudgetModal: () => void;
-  onSelectCategory: (category: string) => void;
-  selectedCategory: string | null;
-}
+} from "lucide-react";
+import { useTransactions } from "../context/TransactionsContext";
+import { useBudgetAndSpending } from "../context/BudgetAndSpendingContext";
 
 const ESSENTIAL_CATEGORIES = new Set([
-  'Housing & Rent',
-  'Food & Groceries',
-  'Utilities & Bills',
-  'Healthcare & Wellness',
-  'Transportation',
+  "Housing & Rent",
+  "Food & Groceries",
+  "Utilities & Bills",
+  "Healthcare & Wellness",
+  "Transportation",
 ]);
 
-export const CategoryAnalyticsCards: React.FC<CategoryAnalyticsCardsProps> = ({
-  categories,
-  metrics,
-  onOpenBudgetModal,
-  onSelectCategory,
-  selectedCategory,
-}) => {
+export const CategoryAnalyticsCards = () => {
+  const { categorySpending, metrics, setIsBudgetModalOpen } =
+    useBudgetAndSpending();
+  const { selectedCategory } = useTransactions();
+
   const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(val);
   };
 
-  const activeCategories = categories.filter((c) => c.amount > 0);
-  const overBudgetCategories = categories.filter((c) => c.amount > c.allocated && c.allocated > 0);
-  const onTrackCategories = categories.filter((c) => c.amount <= c.allocated && c.allocated > 0);
+  const activeCategories = categorySpending.filter((c: any) => c.amount > 0);
+  const overBudgetCategories = categorySpending.filter(
+    (c: any) => c.amount > c.allocated && c.allocated > 0,
+  );
+  const onTrackCategories = categorySpending.filter(
+    (c: any) => c.amount <= c.allocated && c.allocated > 0,
+  );
 
   const totalOverSpend = overBudgetCategories.reduce(
-    (sum, c) => sum + (c.amount - c.allocated),
-    0
+    (sum: any, c: any) => sum + (c.amount - c.allocated),
+    0,
   );
 
   // Top 3 Concentration
-  const top3 = categories.slice(0, 3);
-  const top3Total = top3.reduce((sum, c) => sum + c.amount, 0);
-  const top3Share = metrics.totalExpenses > 0 ? (top3Total / metrics.totalExpenses) * 100 : 0;
+  const top3 = categorySpending.slice(0, 3);
+  const top3Total = top3.reduce((sum: any, c: any) => sum + c.amount, 0);
+  const top3Share =
+    metrics.totalExpenses > 0 ? (top3Total / metrics.totalExpenses) * 100 : 0;
 
   // Essential vs Discretionary Split
   let essentialTotal = 0;
   let discretionaryTotal = 0;
-  categories.forEach((c) => {
+  categorySpending.forEach((c: any) => {
     if (ESSENTIAL_CATEGORIES.has(c.category)) {
       essentialTotal += c.amount;
     } else {
@@ -69,11 +63,15 @@ export const CategoryAnalyticsCards: React.FC<CategoryAnalyticsCardsProps> = ({
   });
 
   const essentialPercent =
-    metrics.totalExpenses > 0 ? (essentialTotal / metrics.totalExpenses) * 100 : 0;
+    metrics.totalExpenses > 0
+      ? (essentialTotal / metrics.totalExpenses) * 100
+      : 0;
   const discretionaryPercent =
-    metrics.totalExpenses > 0 ? (discretionaryTotal / metrics.totalExpenses) * 100 : 0;
+    metrics.totalExpenses > 0
+      ? (discretionaryTotal / metrics.totalExpenses) * 100
+      : 0;
 
-  const topCategory = categories[0] || null;
+  const topCategory = categorySpending[0] || null;
 
   return (
     <div className="space-y-4">
@@ -93,13 +91,14 @@ export const CategoryAnalyticsCards: React.FC<CategoryAnalyticsCardsProps> = ({
               </span>
             </div>
             <p className="text-xs text-slate-500">
-              Audit budget variance, spending concentration, and category risk factors across this cycle
+              Audit budget variance, spending concentration, and category risk
+              factors across this cycle
             </p>
           </div>
         </div>
 
         <button
-          onClick={onOpenBudgetModal}
+          onClick={() => setIsBudgetModalOpen(true)}
           className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors self-start sm:self-auto cursor-pointer"
         >
           <SlidersHorizontal className="w-3.5 h-3.5" />
@@ -131,7 +130,9 @@ export const CategoryAnalyticsCards: React.FC<CategoryAnalyticsCardsProps> = ({
                 </div>
               </div>
             ) : (
-              <span className="text-sm text-slate-400">No expenses recorded</span>
+              <span className="text-sm text-slate-400">
+                No expenses recorded
+              </span>
             )}
           </div>
 
@@ -157,18 +158,20 @@ export const CategoryAnalyticsCards: React.FC<CategoryAnalyticsCardsProps> = ({
             <div className="flex items-baseline gap-2">
               <span
                 className={`text-2xl font-bold tracking-tight font-mono tabular-nums ${
-                  overBudgetCategories.length > 0 ? 'text-rose-600' : 'text-emerald-700'
+                  overBudgetCategories.length > 0
+                    ? "text-rose-600"
+                    : "text-emerald-700"
                 }`}
               >
                 {overBudgetCategories.length > 0
                   ? `${overBudgetCategories.length} Over Budget`
-                  : 'All on Track'}
+                  : "All on Track"}
               </span>
             </div>
             <div className="mt-1.5 text-xs text-slate-500">
               {overBudgetCategories.length > 0 ? (
                 <span>
-                  Exceeded allocations by{' '}
+                  Exceeded allocations by{" "}
                   <strong className="text-rose-600 font-mono">
                     {formatCurrency(totalOverSpend)}
                   </strong>
@@ -184,7 +187,7 @@ export const CategoryAnalyticsCards: React.FC<CategoryAnalyticsCardsProps> = ({
           <div className="mt-4 pt-3 border-t border-slate-100 text-xs flex items-center justify-between">
             <span className="text-slate-500">Safe Categories</span>
             <span className="font-mono tabular-nums font-medium text-emerald-700">
-              {onTrackCategories.length} / {categories.length}
+              {onTrackCategories.length} / {categorySpending.length}
             </span>
           </div>
         </div>
@@ -223,7 +226,8 @@ export const CategoryAnalyticsCards: React.FC<CategoryAnalyticsCardsProps> = ({
           <div className="mt-4 pt-3 border-t border-slate-100 text-xs text-slate-500 flex items-center justify-between">
             <span>Discretionary:</span>
             <span className="font-mono tabular-nums font-medium text-slate-800">
-              {formatCurrency(discretionaryTotal)} ({discretionaryPercent.toFixed(0)}%)
+              {formatCurrency(discretionaryTotal)} (
+              {discretionaryPercent.toFixed(0)}%)
             </span>
           </div>
         </div>
@@ -240,17 +244,17 @@ export const CategoryAnalyticsCards: React.FC<CategoryAnalyticsCardsProps> = ({
                 {activeCategories.length}
               </span>
               <span className="text-xs text-slate-500">
-                of {categories.length} configured
+                of {categorySpending.length} configured
               </span>
             </div>
 
             <div className="mt-2 text-xs text-slate-500">
-              Avg spent per active bucket:{' '}
+              Avg spent per active bucket:{" "}
               <strong className="text-slate-800 font-mono">
                 {formatCurrency(
                   activeCategories.length > 0
                     ? metrics.totalExpenses / activeCategories.length
-                    : 0
+                    : 0,
                 )}
               </strong>
             </div>

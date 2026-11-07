@@ -1,28 +1,17 @@
 import { useCallback } from "react";
 import { TransactionsSummaryCards } from "../TransactionsSummaryCards";
 import { TransactionTable } from "../TransactionTable";
+import { useTransactions } from "@/src/context/TransactionsContext";
 
-const Transactions = ({
-  monthTransactions,
-  setEditingTransaction,
-  setIsAddModalOpen,
-  selectedCategory,
-  setSelectedCategory,
-  selectedMonth,
-  setTransactions,
-  saveStoredTransactions,
-  showToast,
-}: {
-  monthTransactions: any;
-  setEditingTransaction: any;
-  setIsAddModalOpen: any;
-  selectedCategory: any;
-  setSelectedCategory: any;
-  selectedMonth: any;
-  setTransactions: any;
-  saveStoredTransactions: any;
-  showToast: any;
-}) => {
+const Transactions = ({ showToast }: { showToast: any }) => {
+  const {
+    monthTransactions,
+    selectedMonth,
+    setEditingTransaction,
+    selectedCategory,
+    setSelectedCategory,
+    setIsAddModalOpen,
+  } = useTransactions();
   const handleExportCSV = useCallback(() => {
     const rows = [
       [
@@ -72,17 +61,9 @@ const Transactions = ({
         onExportCSV={handleExportCSV}
       />
       <TransactionTable
-        transactions={monthTransactions}
         selectedCategory={selectedCategory}
         onSelectCategory={setSelectedCategory}
-        onOpenAddModal={() => {
-          setEditingTransaction(null);
-          setIsAddModalOpen(true);
-        }}
-        setTransactions={setTransactions}
-        saveStoredTransactions={saveStoredTransactions}
         showToast={showToast}
-        setEditingTransaction={setEditingTransaction}
         setIsAddModalOpen={setIsAddModalOpen}
       />
     </div>
