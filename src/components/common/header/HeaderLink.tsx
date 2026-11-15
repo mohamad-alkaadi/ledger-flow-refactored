@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction } from "react";
 
 const HeaderLink = ({
   title,
@@ -17,7 +17,7 @@ const HeaderLink = ({
       className={`capitalize px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
         activeTab === title
           ? "bg-white text-slate-900 shadow-xs"
-          : "text-slate-600 hover:text-slate-900"
+          : "text-slate-600 hover:text-slate-900 cursor-pointer"
       }`}
     >
       {title}
