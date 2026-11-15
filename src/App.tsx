@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Header } from "./components/common/Header";
+import { Header } from "./components/common/header/Header";
 import { CategoryAnalyticsCards } from "./components/CategoryAnalyticsCards";
 import { AddTransactionModal } from "./components/AddTransactionModal";
 import { BudgetSettingsModal } from "./components/BudgetSettingsModal";
@@ -31,26 +31,14 @@ export default function App() {
     <TransactionsProvider>
       <BudgetAndSpendingProvider>
         <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
-          {/* Top Header */}
-          <Header
-            activeTab={activeTab}
-            setActiveTab={(tab: string) =>
-              setActiveTab(tab as "overview" | "analytics" | "transactions")
-            }
-          />
-
+          <Header activeTab={activeTab} setActiveTab={setActiveTab} />
           <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-            {/* Selected Category Filter Banner */}
             <FilteringByHeader />
-
             {activeTab === "analytics" && <CategoryAnalyticsCards />}
-
             {activeTab === "overview" && <Overview showToast={showToast} />}
-
             {activeTab === "analytics" && (
               <Analytics setActiveTab={setActiveTab} />
             )}
-
             {activeTab === "transactions" && (
               <Transactions showToast={showToast} />
             )}
@@ -62,7 +50,6 @@ export default function App() {
 
           <BudgetSettingsModal showToast={showToast} />
 
-          {/* Toast Notification */}
           {toastMessage && (
             <ToastNotification
               toastMessage={toastMessage}
