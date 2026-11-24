@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Header } from "./components/common/header/Header";
-import { CategoryAnalyticsCards } from "./components/CategoryAnalyticsCards";
+import { CategoryAnalyticsCards } from "./components/analytics/CategoryAnalyticsCards";
 import { AddTransactionModal } from "./components/AddTransactionModal";
 import { BudgetSettingsModal } from "./components/BudgetSettingsModal";
 import Footer from "./components/common/Footer";
@@ -34,7 +34,6 @@ export default function App() {
           <Header activeTab={activeTab} setActiveTab={setActiveTab} />
           <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
             <FilteringByHeader />
-            {activeTab === "analytics" && <CategoryAnalyticsCards />}
             {activeTab === "overview" && <Overview showToast={showToast} />}
             {activeTab === "analytics" && (
               <Analytics setActiveTab={setActiveTab} />

@@ -1,10 +1,11 @@
 import React, { useMemo } from "react";
-import { CategoryAnalyticsBreakdown } from "../CategoryAnalyticsBreakdown";
 import { CategoryTrendComparison } from "../charts/CategoryTrendComparison";
-import { CategoryHealthMatrix } from "../charts/CategoryHealthMatrix";
+import { CategoryHealthMatrix } from "./category-health-matrix/CategoryHealthMatrix";
 import { useTransactions } from "@/src/context/TransactionsContext";
 import { calculateMultiMonthCategoryTrends } from "@/src/services/expenseService";
 import { useBudgetAndSpending } from "@/src/context/BudgetAndSpendingContext";
+import { CategoryAnalyticsBreakdown } from "./CategoryAnalyticsBreakdown";
+import { CategoryAnalyticsCards } from "./CategoryAnalyticsCards";
 
 const Analytics = ({ setActiveTab }: { setActiveTab: any }) => {
   const { transactions, selectedMonth } = useTransactions();
@@ -15,6 +16,7 @@ const Analytics = ({ setActiveTab }: { setActiveTab: any }) => {
 
   return (
     <div>
+      <CategoryAnalyticsCards />
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Category Health & Allocation Inspector */}
         <div className="lg:col-span-6">

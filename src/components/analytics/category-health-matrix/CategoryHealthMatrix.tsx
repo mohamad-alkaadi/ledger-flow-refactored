@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CategorySpending } from "../../types/expense";
+import { CategorySpending } from "../../../types/expense";
 import {
   ShieldCheck,
   AlertTriangle,
@@ -7,6 +7,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { useTransactions } from "@/src/context/TransactionsContext";
+import CategoryHealthMatrixFooter from "./CategoryHealthMatrixFooter";
 
 interface CategoryHealthMatrixProps {
   categories: CategorySpending[];
@@ -328,19 +329,10 @@ export const CategoryHealthMatrix: React.FC<CategoryHealthMatrixProps> = ({
       </div>
 
       {/* Footer */}
-      <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-        <span>
-          Click any category above to inspect its real-time ledger health
-        </span>
-        {selectedCategory && (
-          <button
-            onClick={() => setSelectedCategory(null)}
-            className="text-slate-700 hover:underline font-medium cursor-pointer"
-          >
-            Clear selection
-          </button>
-        )}
-      </div>
+      <CategoryHealthMatrixFooter
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+      />
     </div>
   );
 };

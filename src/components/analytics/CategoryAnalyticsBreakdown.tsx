@@ -1,5 +1,4 @@
 import React from "react";
-import { CategorySpending } from "../types/expense";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -7,7 +6,8 @@ import {
   TrendingDown,
   ArrowRight,
 } from "lucide-react";
-import { useTransactions } from "../context/TransactionsContext";
+import { CategorySpending } from "@/src/types/expense";
+import { useTransactions } from "@/src/context/TransactionsContext";
 
 interface CategoryAnalyticsBreakdownProps {
   categories: CategorySpending[];

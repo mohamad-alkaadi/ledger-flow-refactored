@@ -2,7 +2,6 @@ import { BudgetSummaryCards } from "../BudgetSummaryCards";
 import { CategoryPieChart } from "../charts/CategoryPieChart";
 import { CategoryBarChart } from "../charts/CategoryBarChart";
 import { TransactionTable } from "../TransactionTable";
-import { Transaction } from "@/src/types/expense";
 import { useTransactions } from "@/src/context/TransactionsContext";
 import { useBudgetAndSpending } from "@/src/context/BudgetAndSpendingContext";
 
